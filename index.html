@@ -50,6 +50,15 @@
         <li data-step="2"><span class="num">2</span><span class="lbl">Check names</span></li>
         <li data-step="3"><span class="num">3</span><span class="lbl">Download</span></li>
       </ol>
+      <div class="fs-stage" data-panel="hide">
+        <div class="vn-cg" aria-hidden="true"></div>
+        <div class="vn-box" role="status" aria-live="polite">
+          <span class="vn-name" aria-hidden="true">FERPA-san</span>
+          <span class="vn-sr sr-only"></span>
+          <p class="vn-text" aria-hidden="true"></p>
+          <span class="vn-cursor" aria-hidden="true">&#9660;</span>
+        </div>
+      </div>
 
       <!-- Step 1 -->
       <div class="step" id="step-1">
@@ -61,7 +70,7 @@
             <span class="dz-main">Drag your files here</span>
             <span class="dz-sub">or <span class="linkish">choose files</span> from your computer</span>
             <span class="type-chips" aria-label="Supported file types">
-              <span class="chip chip-word">Word</span><span class="chip chip-excel">Excel</span><span class="chip chip-ppt">PowerPoint</span><span class="chip chip-text">Text &amp; CSV</span>
+              <span class="chip chip-word">Word</span><span class="chip chip-excel">Excel</span><span class="chip chip-ppt">PowerPoint</span><span class="chip chip-pdf">PDF</span><span class="chip chip-text">Text &amp; CSV</span>
             </span>
           </label>
           <ul class="file-list" id="file-list" aria-live="polite"></ul>
@@ -213,6 +222,15 @@
 
     <!-- ============ PUT NAMES BACK ============ -->
     <section id="panel-restore" role="tabpanel" aria-labelledby="tab-restore" hidden>
+      <div class="fs-stage" data-panel="restore">
+        <div class="vn-cg" aria-hidden="true"></div>
+        <div class="vn-box" role="status" aria-live="polite">
+          <span class="vn-name" aria-hidden="true">FERPA-san</span>
+          <span class="vn-sr sr-only"></span>
+          <p class="vn-text" aria-hidden="true"></p>
+          <span class="vn-cursor" aria-hidden="true">&#9660;</span>
+        </div>
+      </div>
       <div class="grid-2 restore-grid">
         <div class="card">
           <h2 class="card-title"><span class="num-badge">1</span> Your key</h2>
@@ -240,9 +258,9 @@
           </div>
           <div id="r-file-wrap" hidden>
             <label class="dropzone dz-small" id="r-file-drop" tabindex="0">
-              <input type="file" id="r-file-input" multiple accept=".docx,.docm,.dotx,.xlsx,.xlsm,.pptx,.pptm,.txt,.md,.csv,.tsv" hidden>
+              <input type="file" id="r-file-input" multiple accept=".docx,.docm,.dotx,.xlsx,.xlsm,.pptx,.pptm,.pdf,.txt,.md,.csv,.tsv" hidden>
               <span class="dz-main">Drop the AI's file here</span>
-              <span class="dz-sub">Word, Excel, PowerPoint, text or CSV</span>
+              <span class="dz-sub">Word, Excel, PowerPoint, PDF, text or CSV</span>
             </label>
             <ul class="out-list" id="r-file-list"></ul>
           </div>
@@ -264,7 +282,7 @@
     <section class="explain wrap-narrow" aria-labelledby="how-title">
       <h2 id="how-title">How it works</h2>
       <div class="how-grid">
-        <div class="how"><span class="how-num">1</span><h3>Finds names</h3><p>Uses your class list, column headings like “Student Name”, and a built-in list of nearly 1,000 first names. You approve every one.</p></div>
+        <div class="how"><span class="how-num">1</span><h3>Finds names</h3><p>Uses your class list, column headings like “Student Name”, and built-in lists of over 10,000 first names and 25,000 last names. You approve every one.</p></div>
         <div class="how"><span class="how-num">2</span><h3>Swaps in code names</h3><p>Each student gets a random code name like <span class="code-eg">Fluffy Unicorn 45</span>. “Emma” becomes “Fluffy” and “Johnson” becomes “Unicorn 45”, so the writing still reads naturally.</p></div>
         <div class="how"><span class="how-num">3</span><h3>Keeps a private key</h3><p>The key lists who is who. It stays with you, so you can put the real names back into whatever the AI writes.</p></div>
       </div>
@@ -284,8 +302,9 @@
       <details class="faq">
         <summary>What it can't do</summary>
         <ul>
-          <li>Read text inside pictures, screenshots, or scanned PDFs.</li>
-          <li>Open old <code>.doc</code>/<code>.xls</code>/<code>.ppt</code> files or PDFs. Save them as .docx/.xlsx/.pptx first.</li>
+          <li>Read text inside pictures, screenshots, or scanned PDFs. It tells you when a file has pictures so you can check them.</li>
+          <li>Keep a PDF's layout. PDFs come out as a clean text file, which is what AI tools read best anyway.</li>
+          <li>Open old <code>.doc</code>/<code>.xls</code>/<code>.ppt</code> files. Save them as .docx/.xlsx/.pptx first (it takes 10 seconds and the tool tells you how).</li>
           <li>Promise perfection. Always skim the result before you share it. This tool helps you follow FERPA, but it isn't legal advice.</li>
         </ul>
       </details>
@@ -297,10 +316,14 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="busy" id="busy" hidden><div class="busy-box"><span class="spinner" aria-hidden="true"></span><span id="busy-text">Working…</span></div></div>
 
+  <script src="vendor/pdfjs/pdf.min.js"></script>
+  <script src="vendor/pdfjs/pdf.worker.min.js"></script>
   <script src="js/zip.js"></script>
+  <script src="js/names-big.js"></script>
   <script src="js/names-data.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/office.js"></script>
+  <script src="js/mascot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

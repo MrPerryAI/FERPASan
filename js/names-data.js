@@ -108,6 +108,8 @@
     first last next previous new old high middle elementary junior senior freshman sophomore
     okay ok please thanks thank dear hello hi hey regards sincerely best yours
     attendance absent present tardy late early behavior participation effort
+    microsoft google apple amazon windows macintosh office word excel powerpoint canvas schoology zoom kahoot quizlet
+    chromebook ipad iphone android youtube tiktok instagram snapchat
   `));
 
   // Honorifics that usually precede an adult's last name.
@@ -142,8 +144,16 @@
     Muffin Waffle Pancake Cupcake Dumpling Pretzel Noodle Biscuit Cookie Taco Burrito Nacho Pickle Meatball Donut
   `);
 
+  // Big generated lists (js/names-big.js, from SSA + Census data) merge into the hand-picked ones.
+  const big = global.FNamesBig || { first: '', surnames: '', careful: '', common: '', famous: '' };
+  const words = (s) => (s ? s.split(' ') : []);
+  for (const w of words(big.careful)) COMMON_WORD_NAMES.add(w);
+
   global.FNames = {
-    FIRST_NAMES: new Set(FIRST_NAMES.map((n) => n.toLowerCase())),
+    FIRST_NAMES: new Set([...FIRST_NAMES.map((n) => n.toLowerCase()), ...words(big.first)]),
+    SURNAMES: new Set(words(big.surnames)),
+    COMMON_WORDS: new Set(words(big.common)),
+    FAMOUS: new Set(big.famous ? big.famous.split('|') : []),
     COMMON_WORD_NAMES,
     NOT_NAMES,
     HONORIFICS,

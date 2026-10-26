@@ -20,6 +20,7 @@
     txt: { kind: 'text', label: 'Text', mime: 'text/plain' },
     md: { kind: 'text', label: 'Text', mime: 'text/markdown' },
     csv: { kind: 'csv', label: 'CSV', mime: 'text/csv' },
+    pdf: { kind: 'text', label: 'PDF', mime: 'text/plain', outExt: 'txt', pdf: true },
     tsv: { kind: 'csv', label: 'CSV', mime: 'text/tab-separated-values' },
   };
 
@@ -27,7 +28,6 @@
     doc: 'This is an older Word file. Open it in Word and choose File → Save As → Word Document (.docx), then add it again.',
     xls: 'This is an older Excel file. Open it in Excel and choose File → Save As → Excel Workbook (.xlsx), then add it again.',
     ppt: 'This is an older PowerPoint file. Open it in PowerPoint and choose File → Save As → PowerPoint Presentation (.pptx), then add it again.',
-    pdf: "PDFs can't be edited safely here. If you have the original Word/Google Doc, download it as .docx and add that instead.",
     odt: 'Save this as a Word Document (.docx) first, then add it again.',
     ods: 'Save this as an Excel Workbook (.xlsx) first, then add it again.',
     odp: 'Save this as a PowerPoint Presentation (.pptx) first, then add it again.',
@@ -99,7 +99,7 @@
       const el = all[i];
       const ln = el.localName;
       if (isLeaf(el) && el.textContent) {
-        if (isProps && el !== doc.documentElement) els.push(el);
+        if (isProps && el !== doc.documentElement && (/core\.xml$/.test(partName) || ['lpstr', 'bstr', 'Company', 'Manager'].includes(ln))) els.push(el);
         else if (PLAIN_LEAVES.has(ln) && !RICH.has(ln)) els.push(el);
         else if (ln === 'v' && (isChart || (isSheet && el.parentNode && el.parentNode.getAttribute('t') === 'str'))) els.push(el);
       }
@@ -127,11 +127,34 @@
       doc.media = doc.zip.names().filter((n) => /\/media\//.test(n) && /\.(png|jpe?g|gif|bmp|tiff?|emf|wmf|svg|webp)$/i.test(n)).length;
       if (!doc.zip.names().some((n) => /^(word|xl|ppt)\//.test(n))) throw new Error('This file looks damaged or isn’t a real Office document.');
     } else {
-      doc.text = await file.text();
+      doc.text = type.pdf ? await pdfToText(file) : await file.text();
       doc.media = 0;
     }
     doc.corpus = await extract(doc);
     return doc;
+  }
+
+  /** PDFs: pull out the text (pdf.js, bundled, runs on this computer). The result is a .txt file. */
+  async function pdfToText(file) {
+    const lib = global.pdfjsLib;
+    if (!lib) throw new Error('PDF reading isn\u2019t included in this copy. Save the PDF as Word (.docx) or text first.');
+    let pdf;
+    try {
+      pdf = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false, disableFontFace: true, useSystemFonts: false }).promise;
+    } catch (err) {
+      throw new Error(/password/i.test(err && err.name + err.message) ? 'This PDF is password-protected. Remove the password, then add it again.' : 'This PDF looks damaged and couldn\u2019t be read.');
+    }
+    const pages = [];
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const tc = await (await pdf.getPage(n)).getTextContent();
+      let text = '';
+      for (const it of tc.items) text += (it.str || '') + (it.hasEOL ? '\n' : '');
+      pages.push(text.replace(/[ \t]+\n/g, '\n').trim());
+    }
+    await pdf.destroy();
+    const all = pages.join('\n\n');
+    if (all.replace(/\s/g, '').length < 20) throw new Error('This PDF is a scanned picture, so there\u2019s no text to read. If you have the original document, add that instead.');
+    return all;
   }
 
   async function extract(doc) {
@@ -313,10 +336,10 @@
     return { blob: await zip.toBlob(doc.type.mime), count };
   }
 
-  function outputName(name, suffix) {
+  function outputName(name, suffix, newExt) {
     const ext = extOf(name);
     const base = ext ? name.slice(0, -(ext.length + 1)) : name;
-    return base + '-' + suffix + (ext ? '.' + ext : '');
+    return base + '-' + suffix + (newExt || ext ? '.' + (newExt || ext) : '');
   }
 
   global.FOffice = { openFile, rewrite, outputName, extOf, TYPES, OLD_FORMATS };

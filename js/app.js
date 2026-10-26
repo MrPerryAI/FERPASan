@@ -25,6 +25,10 @@
 
   // ---------- small UI helpers ----------
 
+  // FERPA-san Edition dialogue (does nothing in the standard edition)
+  const say = (mood, text, panel) => window.FMascot && window.FMascot.say(mood, text, panel);
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+
   let toastTimer;
   function toast(msg) {
     const t = $('toast');
@@ -55,8 +59,8 @@
   function fileIcon(name, bad) {
     const ext = O.extOf(name);
     const t = O.TYPES[ext];
-    const cls = bad ? 'bad' : !t ? 'text' : t.label === 'Word' ? 'word' : t.label === 'Excel' ? 'excel' : t.label === 'PowerPoint' ? 'ppt' : 'text';
-    const letter = bad ? '!' : { word: 'W', excel: 'X', ppt: 'P', text: 'T' }[cls];
+    const cls = bad ? 'bad' : !t ? 'text' : t.label === 'PDF' ? 'pdf' : t.label === 'Word' ? 'word' : t.label === 'Excel' ? 'excel' : t.label === 'PowerPoint' ? 'ppt' : 'text';
+    const letter = bad ? '!' : { word: 'W', excel: 'X', ppt: 'P', pdf: 'PDF', text: 'T' }[cls];
     return `<span class="ficon ${cls}" aria-hidden="true">${letter}</span>`;
   }
 
@@ -124,12 +128,16 @@
       }
       renderFiles();
     }
+    const bad = state.files.filter((f) => f.status === 'error').pop();
+    const ready = state.files.filter((f) => f.status === 'ready').length;
+    if (bad && files.some((f) => f === bad.file)) say('oops', `Hmm... I couldn't open "${bad.file.name}". ${bad.error}`);
+    else if (ready) say('cheer', `${plural(ready, 'file')} ready! Add more if you like, then press "Find names" and I'll get to work.`);
   }
 
   function renderFiles() {
     $('file-list').innerHTML = state.files.map((f) => {
       const bad = f.status === 'error';
-      const sub = f.status === 'loading' ? 'Reading…' : bad ? esc(f.error) : `${O.TYPES[f.doc.ext].label} · ${prettySize(f.file.size)} · ready`;
+      const sub = f.status === 'loading' ? 'Reading…' : bad ? esc(f.error) : `${O.TYPES[f.doc.ext].label}${f.doc.type.pdf ? ' (will be saved as text)' : ''} · ${prettySize(f.file.size)} · ready`;
       return `<li class="file ${bad ? 'is-error' : ''}">${fileIcon(f.file.name, bad)}
         <div class="fmeta"><div class="fname">${esc(f.file.name)}</div><div class="fsub">${sub}</div></div>
         <button class="icon-btn" data-remove="${f.id}" aria-label="Remove ${esc(f.file.name)}" title="Remove">✕</button></li>`;
@@ -185,6 +193,7 @@
   const opts = () => ({ emails: $('opt-emails').checked, phones: $('opt-phones').checked, ids: $('opt-ids').checked });
 
   $('btn-find').onclick = async () => {
+    say('think', 'Let me read through these... hmm, hmm...');
     busy('Looking for names…');
     await nextFrame();
     try {
@@ -201,9 +210,13 @@
       for (const p of state.people) book.aliasFor(p);
       renderReview();
       showStep(2);
+      const maybe = found.people.filter((p) => p.confidence === 'maybe').length;
+      if (!found.people.length && !found.contacts.length) say('oops', "I couldn't find any names... If there are students in here, paste your class list on the first page, or type their names below for me!");
+      else say('happy', `I found ${plural(found.people.length, 'name')}! Please look them over for me.${maybe ? ` ${maybe} might just be ordinary words or famous people, so I left those unchecked.` : ''} Press the dice to give someone a new code name.`);
     } catch (err) {
       console.error(err);
       toast('Something went wrong: ' + err.message);
+      say('oops', 'Eek! Something went wrong: ' + err.message);
     } finally {
       busy(null);
     }
@@ -334,7 +347,7 @@
     toast(p.count ? `Added ${E.displayName(p)} (${p.count} mention${p.count > 1 ? 's' : ''}).` : `Added ${E.displayName(p)}. Not seen in your files, but it'll be hidden if it appears.`);
   });
 
-  $('btn-back-1').onclick = () => showStep(1);
+  $('btn-back-1').onclick = () => { showStep(1); say('happy', 'Add or remove files, then press "Find names" again whenever you\'re ready.'); };
 
   // ---------- step 3: create files ----------
 
@@ -342,6 +355,7 @@
     const people = state.people.filter((p) => !state.off.has(p.id));
     const contacts = state.contacts.filter((c) => !state.off.has(c.id));
     if (!people.length && !contacts.length) { toast('Nothing is checked. Check at least one name.'); return; }
+    say('think', 'Putting everyone in disguise...');
     busy('Swapping in code names…');
     await nextFrame();
     try {
@@ -351,14 +365,18 @@
       state.results = [];
       for (const f of state.files.filter((x) => x.status === 'ready')) {
         const { blob, count } = await O.rewrite(f.doc, plan.matcher, { scrubAuthor: $('opt-author').checked });
-        state.results.push({ name: O.outputName(f.doc.name, 'sanitized'), blob, count, media: f.doc.media });
+        state.results.push({ name: O.outputName(f.doc.name, 'sanitized', f.doc.type.outExt), blob, count, media: f.doc.media });
       }
       await leftoverCheck(people);
       renderResults();
       showStep(3);
+      const total = state.results.reduce((n, r) => n + r.count, 0);
+      if (state.leftovers && state.leftovers.length) say('oops', `Wait! I double-checked and spotted ${plural(state.leftovers.length, 'word')} that still look like names. Could you check the yellow box for me?`);
+      else say('serious', `All done: ${plural(total, 'replacement')}! Now listen... the KEY is top secret. Save it on your computer, and never, ever give it to the AI.`);
     } catch (err) {
       console.error(err);
       toast('Something went wrong: ' + err.message);
+      say('oops', 'Eek! Something went wrong: ' + err.message);
     } finally {
       busy(null);
     }
@@ -425,6 +443,7 @@
     download(new Blob([E.keyToCSV(state.outKeyRows)], { type: 'text/csv;charset=utf-8' }), keyFileName());
     state.keyDownloaded = true;
     toast('Key saved. Keep it private — never upload it to AI.');
+    say('wink', 'Key saved! Keep it secret, keep it safe. When the AI answers, come find me under "Put names back".');
   };
 
   $('btn-print-key').onclick = () => {
@@ -479,7 +498,7 @@
   wireDropzone($('r-key-drop'), $('r-key-input'), async (files) => {
     if (!files[0]) return;
     const rows = await loadKeyFile(files[0], $('r-key-status'));
-    if (rows) { state.restoreRows = rows; $('r-key-session').hidden = true; updateRestore(); }
+    if (rows) { state.restoreRows = rows; $('r-key-session').hidden = true; updateRestore(); say('happy', 'Got your key! Now paste what the AI wrote, or drop in its file.', 'restore'); }
   });
 
   function setRestoreMode(m) {
@@ -493,12 +512,14 @@
   $('r-seg-text').onclick = () => setRestoreMode('text');
   $('r-seg-file').onclick = () => setRestoreMode('file');
 
+  let lastSaid = -1, sayTimer;
   function updateRestore() {
     const text = $('r-input').value;
     const card = $('r-output-card');
     if (restoreMode !== 'text' || !text.trim()) { card.hidden = true; return; }
     card.hidden = false;
     if (!state.restoreRows) {
+      say('serious', 'I need your key first! Drop it into box 1.', 'restore');
       $('r-output').innerHTML = '<span class="hint">Add your key (step 1) to see real names here.</span>';
       $('r-count').textContent = '';
       return;
@@ -513,6 +534,11 @@
     $('r-output').innerHTML = html + esc(text.slice(last));
     $('r-count').textContent = `${edits.length} name${edits.length === 1 ? '' : 's'} put back`;
     state.restoredText = m.replace(text).text;
+    if (edits.length !== lastSaid) {
+      lastSaid = edits.length;
+      clearTimeout(sayTimer);
+      sayTimer = setTimeout(() => say(edits.length ? 'cheer' : 'think', edits.length ? `I put back ${plural(edits.length, 'name')}! Copy it whenever you're ready.` : "Hmm, I don't see any code names from this key in there. Is it the right key?", 'restore'), 500);
+    }
   }
   $('r-input').addEventListener('input', updateRestore);
 
@@ -541,9 +567,10 @@
       try {
         const doc = await O.openFile(file);
         const { blob, count } = await O.rewrite(doc, m, {});
-        const name = O.outputName(file.name.replace(/-sanitized(?=\.[^.]+$)/, ''), 'restored');
+        const name = O.outputName(file.name.replace(/-sanitized(?=\.[^.]+$)/, ''), 'restored', doc.type.outExt);
         li.querySelector('.fname').textContent = name;
         li.querySelector('.fsub').textContent = `${count} name${count === 1 ? '' : 's'} put back`;
+        say('cheer', `Done! I put ${plural(count, 'name')} back into "${name}".`, 'restore');
         const b = document.createElement('button');
         b.className = 'btn btn-primary';
         b.textContent = 'Download';
@@ -557,4 +584,9 @@
   });
 
   renderFiles();
+  if (window.FMascot) {
+    window.FMascot.init();
+    say('happy', "Welcome! I'm FERPA-san, the school's privacy librarian. Hand me your files and I'll give every student a secret code name. Tip: paste your class list so I don't miss anyone!");
+    say('wink', "Did the AI write back? Show me your key and I'll put everyone's real names back.", 'restore');
+  }
 })();

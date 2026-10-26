@@ -5,9 +5,21 @@
 `Emma Johnson turned in her essay.` → `Fluffy Unicorn 45 turned in her essay.`
 
 - 🔒 **Private.** It runs entirely in your web browser. Your files are never uploaded anywhere, and it works with Wi-Fi off.
-- 📄 **Works with your files.** Word (.docx), Excel (.xlsx), PowerPoint (.pptx), and text/CSV. Formatting, tables, formulas and pictures stay as they were.
+- 📄 **Works with your files.** Word, Excel, PowerPoint, PDF, and text/CSV. Formatting, tables, formulas and pictures stay as they were.
 - 🔑 **Reversible.** You get a private **key** so you can turn the code names in the AI's answer back into real names.
 - 🧑‍🏫 **Made for teachers.** Three steps, no install, no account.
+
+## Two editions
+
+Both editions do exactly the same thing. Pick the one you like.
+
+| Standard Edition | FERPA-san Edition |
+|---|---|
+| [![Standard Edition](docs/standard-edition.png)](FERPA-Sanitizer.html) | [![FERPA-san Edition](docs/ferpa-san-edition.png)](FERPA-Sanitizer-FERPA-san-Edition.html) |
+| Clean and calm. Light and dark mode. | A PC-98 style visual novel. FERPA-san, the school's privacy librarian, walks you through each step. |
+| **[`FERPA-Sanitizer.html`](FERPA-Sanitizer.html)** | **[`FERPA-Sanitizer-FERPA-san-Edition.html`](FERPA-Sanitizer-FERPA-san-Edition.html)** |
+
+**Meet FERPA-san.** She has teal hair, a padlock hair clip, and a golden key on her ribbon. Her plush, Fluffy Unicorn #45, rides on her shoulder. Her picture is drawn fresh on your computer: the vector art is shrunk and reduced to a 16-color PC-98 palette with ordered dithering. Her expression changes as you work. She thinks while she scans, beams when she's done, turns serious about your key, and sweats if something goes wrong.
 
 ---
 
@@ -15,17 +27,18 @@
 
 ### Get it (one time)
 
-1. Download **[`FERPA-Sanitizer.html`](FERPA-Sanitizer.html)**. On GitHub, open the file and click the **Download raw file** button (⬇).
+1. Download one of the editions above. On GitHub, open the file and click the **Download raw file** button (⬇).
 2. Save it somewhere easy to find, like your Desktop.
 3. Double-click it. It opens in your web browser (Chrome, Edge, Firefox or Safari). That's it. You don't need internet.
 
 ### Hide names (before AI)
 
-1. **Add files.** Drag your Word, Excel or PowerPoint files onto the page.
+1. **Add files.** Drag your Word, Excel, PowerPoint, PDF or text files onto the page.
    - *Recommended:* open **"Paste your class list"** and paste your roster, one student per line. The tool then catches every name, even unusual ones.
 2. **Check names.** The tool shows every name it found, the code name it will use, and a snippet of where it appeared.
    - Uncheck anything that isn't a person.
-   - Names that are also everyday words (like *Will*, *Grace*, *May*) are flagged so you can decide.
+   - Names that are also everyday words (*Will*, *Grace*, *Hunter*) are flagged for a double-check.
+   - Famous people and book characters (*Abraham Lincoln*, *Atticus Finch*) are listed but left unchecked, so essays about them aren't changed.
    - Missed someone? Type their name in **"Missed someone?"**
    - Don't like a code name? Click 🎲 to pick another.
 3. **Download.**
@@ -66,51 +79,73 @@ Each student gets a code name like **Fluffy Unicorn 45**:
 
 1. **Your class list** (most accurate) and any **key** you loaded.
 2. **Column headings** in spreadsheets and tables, such as "Student Name", "First Name", "Last Name" or "Parent/Guardian".
-3. **Ordinary sentences**, using a built-in list of nearly 1,000 common first names. The tool also picks up the last name that follows, titles like *Mr./Mrs./Dr.*, `Last, First` formats, and new first names next to a known last name.
+3. **Ordinary sentences**, using built-in lists of **10,000+ first names** (US Social Security baby names plus other open datasets) and **25,000 last names** (US Census 2010). The tool also catches:
+   - the last name after a first name ("Emma Johnson", "Maria de la Cruz")
+   - titles ("Mrs. Okafor", "Dr. Patel")
+   - gradebook order ("Johnson, Emma")
+   - unfamiliar first names before a common last name ("Oluwaseun Adams")
 4. **Contact details:** email addresses, phone numbers, and student ID numbers (6–10 digits). Each can be turned off under **"Also hide…"**.
+
+It also knows what *isn't* a name: everyday words ("Noah's **Math** homework" isn't "Noah Math"), place names ("New York", "Los Angeles"), and famous people.
 
 After making the files, the tool **re-reads the finished files** and lists anything that still looks like a name, so you can go back and add it.
 
-## What it can't do
+## What it can't do (yet)
 
-- It can't read text **inside pictures**, screenshots or scanned pages. The tool warns you when a file has pictures, so you can check them yourself.
-- It can't open old **.doc / .xls / .ppt** files or **PDFs**. Save them as .docx / .xlsx / .pptx first. For Google Docs, use *File → Download → Microsoft Word*.
-- It isn't perfect. **Always skim the sanitized file before you share it.** This tool helps you follow FERPA, but it is not legal advice.
+| Limit | Why, and what to do |
+|---|---|
+| Text inside **pictures**, screenshots or scanned pages | Reading pictures (OCR) would add roughly 15 MB to the file. The tool warns you when a file has pictures, so you can check them yourself. |
+| A PDF's **layout** | PDFs come out as a clean **.txt** file. That's what AI tools read best anyway. A scanned PDF has no text to read. |
+| Old **.doc / .xls / .ppt** files | These old binary formats can't be edited safely in a browser. Use *File → Save As* to make a .docx/.xlsx/.pptx (the tool shows you how). For Google Docs, use *File → Download → Microsoft Word*. |
+| Perfection | **Always skim the sanitized file before you share it.** This tool helps you follow FERPA, but it is not legal advice. |
 
 ---
 
 ## For developers
 
-No dependencies, no build tools, no server. Just plain HTML, CSS and JavaScript.
+No frameworks, no server. Plain HTML, CSS and JavaScript.
 
 ```
-index.html          The page (loads css/ and js/ separately, handy while editing)
-css/styles.css      Styles (light + dark mode, mobile friendly)
-js/zip.js           Tiny ZIP reader/writer using the browser's built-in CompressionStream
-js/names-data.js    First-name list, everyday-word names, code-name word lists
-js/engine.js        Name detection, code names, find/replace matcher, key CSV
-js/office.js        Reads and rewrites .docx/.xlsx/.pptx XML, plus text/CSV
-js/app.js           The screens and buttons
-tools/build.mjs     Bundles everything into FERPA-Sanitizer.html
-FERPA-Sanitizer.html  The single file teachers download (generated)
+index.html             The page (loads css/, js/ and vendor/ separately, handy while editing)
+css/styles.css         Styles: Standard (light/dark) + FERPA-san Edition (PC-98 theme)
+js/zip.js              Tiny ZIP reader/writer using the browser's built-in CompressionStream
+js/names-big.js        GENERATED name lists (see tools/build-names.py)
+js/names-data.js       Hand-picked lists, everyday-word names, code-name word lists
+js/engine.js           Name detection, code names, find/replace matcher, key CSV
+js/office.js           Reads and rewrites .docx/.xlsx/.pptx XML, PDF text, text/CSV
+js/mascot.js           FERPA-san: vector art, PC-98 dithering, visual-novel dialogue
+js/app.js              The screens and buttons
+vendor/pdfjs/          pdf.js 3.11 legacy build (Apache-2.0)
+vendor/fonts/          DotGothic16, Latin subset (SIL OFL), FERPA-san Edition only
+tools/build.mjs        Bundles everything into the two single-file editions
+tools/build-names.py   Downloads the public datasets and regenerates js/names-big.js
 ```
 
-**Edit, then rebuild the single file:**
+**Rebuild the single files after editing:**
 
 ```bash
-node tools/build.mjs
+node tools/build.mjs          # writes both editions
+python3 tools/build-names.py  # only if you want to refresh the name lists
 ```
 
-Open `index.html` directly in a browser while you work. It runs over `file://` with no server, so the scripts are classic (non-module) on purpose.
+While you work, open `index.html` directly in a browser. Add `?edition=ferpasan` to the address to see the FERPA-san Edition. The scripts are classic (non-module) on purpose, so everything runs over `file://`.
 
 **Technical notes**
 
 - Word often splits one word across several formatting "runs" (`<w:t>Em</w:t><w:t>ma</w:t>`). Text is matched per paragraph, then the edits are mapped back onto the original runs, so formatting is kept.
 - Also covered: headers, footers, footnotes, comments, tracked deletions, text boxes, alt text, document properties, Excel shared strings, sheet names, formulas, comments, chart labels, pivot caches, `mailto:` links, and student IDs stored as numbers.
 - Unchanged parts of the ZIP (images and so on) are copied byte-for-byte.
+- pdf.js runs on the main thread (its worker script is included as a normal script), so PDFs work even from a double-clicked file.
 - Code names use `crypto.getRandomValues`.
 - The key is a CSV file (`Type, Real name or info, Code name`) that opens in Excel. Lines starting with `#` are comments.
 
-## License
+**Custom FERPA-san art.** Got commissioned art? In `js/mascot.js`, set `MASCOT_IMAGES` to one picture per mood (`happy`, `cheer`, `think`, `proud`, `serious`, `oops`, `wink`) as data URLs. They go through the same PC-98 dithering. Or replace `MASCOT_SVG` and keep its mood groups.
 
-MIT. See [LICENSE](LICENSE).
+## Credits and licenses
+
+- FERPA Sanitizer: MIT. See [LICENSE](LICENSE).
+- [pdf.js](https://github.com/mozilla/pdf.js) by Mozilla: Apache-2.0 (`vendor/pdfjs/LICENSE`).
+- [DotGothic16](https://github.com/fontworks-fonts/DotGothic16) by Fontworks: SIL Open Font License (`vendor/fonts/OFL.txt`).
+- First names: US Social Security Administration baby names (public domain, via [hadley/data-baby-names](https://github.com/hadley/data-baby-names)) and [@stdlib](https://github.com/stdlib-js/stdlib) first-name datasets (Apache-2.0).
+- Last names: US Census Bureau 2010 surnames (public domain).
+- Everyday-word lists: [SCOWL](http://wordlist.aspell.net/) via [wordlist-english](https://www.npmjs.com/package/wordlist-english).

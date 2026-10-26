@@ -5,7 +5,7 @@
 (function (global) {
   'use strict';
 
-  const { FIRST_NAMES, COMMON_WORD_NAMES, NOT_NAMES, HONORIFICS, ADJECTIVES, CREATURES } = global.FNames;
+  const { FIRST_NAMES, SURNAMES, COMMON_WORDS, FAMOUS, COMMON_WORD_NAMES, NOT_NAMES, HONORIFICS, ADJECTIVES, CREATURES } = global.FNames;
 
   // ---------- text helpers ----------
 
@@ -212,6 +212,8 @@
   const MONTHS = new Set(['may', 'june', 'april', 'august']);
   const MONTH_PREP = new Set(['in', 'on', 'of', 'since', 'until', 'by', 'during', 'next', 'last', 'this', 'early', 'late', 'mid', 'every', 'through', 'before', 'after', 'from', 'to']);
   const HONOR_RE = new RegExp('^(?:' + HONORIFICS.join('|') + ')$', 'i');
+  // "New York", "Los Angeles", "San Jose", "Fort Worth": place names, not people.
+  const PLACE_PREFIX = new Set(['new', 'los', 'las', 'san', 'santa', 'santo', 'st', 'saint', 'fort', 'ft', 'port', 'mount', 'mt', 'lake', 'el', 'la', 'le', 'des', 'baton', 'palo', 'grand', 'north', 'south', 'east', 'west', 'upper', 'lower']);
   const WORD_RE = /[\p{L}\p{M}]+(?:['’\-][\p{L}\p{M}]+)*/gu;
 
   const EMAIL_RE = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g;
@@ -241,7 +243,16 @@
     const gap = (i) => text.slice(tokens[i - 1] ? tokens[i - 1].e : 0, tokens[i].s);
     const plainGap = (i) => /^[  ]+$/.test(gap(i));
     const isSentenceStart = (i) => i === 0 || /[.!?:;•\n"“(•\-–—]\s*$/.test(gap(i)) || /^\s*$/.test(text.slice(0, tokens[i].s));
-    const surnameOk = (t) => t && isCap(t.w) && !NOT_NAMES.has(base(t).toLowerCase()) && (!FIRST_NAMES.has(base(t).toLowerCase()) || COMMON_WORD_NAMES.has(base(t).toLowerCase()) || knownLasts.has(norm(base(t))));
+    // A last name: capitalized, not an everyday word ("Noah Math"), and either a real surname
+    // (Census list), one we've already seen, or at least not just another first name ("Emma Liam").
+    const surnameOk = (t) => {
+      if (!t || !isCap(t.w)) return false;
+      const l = base(t).toLowerCase();
+      if (NOT_NAMES.has(l)) return false;
+      if (knownLasts.has(norm(base(t))) || SURNAMES.has(l)) return true;
+      if (COMMON_WORDS.has(l)) return false;
+      return !FIRST_NAMES.has(l) || COMMON_WORD_NAMES.has(l);
+    };
 
     const used = new Set();
     for (let i = 0; i < tokens.length; i++) {
@@ -263,11 +274,17 @@
       }
 
       if (!isCap(t.w) || !isFirstNameWord(b)) {
-        // "Xochitl Johnson": an unknown capitalized word right before a last name we already know
+        // "Oluwaseun Adams": an unfamiliar first name right before a known or common last name
         const n = tokens[i + 1];
-        if (isCap(t.w) && n && plainGap(i + 1) && knownLasts.has(norm(base(n))) && !NOT_NAMES.has(b.toLowerCase()) && !isSentenceStart(i) && b.length > 1) {
-          det.addPerson({ first: b, last: base(n) }, 'text', 'check');
-          used.add(i + 1);
+        const bl = b.toLowerCase(), nl = n ? base(n).toLowerCase() : '';
+        if (!PLACE_PREFIX.has(bl) && isCap(t.w) && !isUpper(b) && n && isCap(n.w) && plainGap(i + 1) && b.length > 1 && !NOT_NAMES.has(bl) && !COMMON_WORDS.has(bl) && !SURNAMES.has(bl) && !NOT_NAMES.has(nl)) {
+          if (knownLasts.has(norm(base(n)))) {
+            det.addPerson({ first: b, last: base(n) }, 'text', 'check');
+            used.add(i + 1);
+          } else if (SURNAMES.has(nl) && !COMMON_WORDS.has(nl)) {
+            det.addPerson({ first: b, last: base(n) }, 'text', isSentenceStart(i) ? 'maybe' : 'check');
+            used.add(i + 1);
+          }
         }
         continue;
       }
@@ -275,6 +292,7 @@
       const l = b.toLowerCase();
       const careful = COMMON_WORD_NAMES.has(l);
       const prev = tokens[i - 1] ? tokens[i - 1].w.toLowerCase() : '';
+      if (PLACE_PREFIX.has(prev) && tokens[i - 1] && isCap(tokens[i - 1].w) && plainGap(i)) continue;
       const nextChar = text.slice(t.e).match(/^\s*(\S)/);
       if (MONTHS.has(l) && (MONTH_PREP.has(prev) || (nextChar && /\d/.test(nextChar[1])))) continue;
 
@@ -389,9 +407,19 @@
 
     for (const para of corpus.paragraphs) scanContacts(para, det, opts);
 
+    // Famous people and characters (Abraham Lincoln, Atticus Finch) found only in the text are
+    // probably not students: offer them unchecked.
+    for (const p of det.people.values()) {
+      const full = norm([p.first, p.last].filter(Boolean).join(' '));
+      if ([...p.sources].every((s) => s === 'text') && (FAMOUS.has(full) || (!p.last && FAMOUS.has(norm(p.first || ''))))) {
+        p.confidence = 'maybe';
+        p.famous = true;
+      }
+    }
+
     // Fold "Emma" into "Emma Johnson" when Emma is only one known person.
     const people = [...det.people.values()];
-    const fulls = people.filter((p) => p.first && p.last && !p.title);
+    const fulls = people.filter((p) => p.first && p.last && !p.title && !p.famous);
     const result = [];
     for (const p of people) {
       if (p.first && !p.last) {

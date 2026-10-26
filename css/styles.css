@@ -130,7 +130,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .dz-small { padding: 22px 16px; }
 .type-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
 .chip { font-size: .8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
-.chip-word { color: var(--word); } .chip-excel { color: var(--excel); } .chip-ppt { color: var(--ppt); } .chip-text { color: var(--muted); }
+.chip-pdf { color: var(--danger); } .chip-word { color: var(--word); } .chip-excel { color: var(--excel); } .chip-ppt { color: var(--ppt); } .chip-text { color: var(--muted); }
 
 /* ---------- file list ---------- */
 .file-list, .out-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
@@ -139,7 +139,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .file.is-error { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: var(--danger-soft); }
 .ficon { width: 36px; height: 42px; border-radius: 6px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: .95rem; flex: none; position: relative; }
 .ficon::after { content: ""; position: absolute; right: 0; top: 0; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--surface) transparent transparent; }
-.ficon.word { background: var(--word); } .ficon.excel { background: var(--excel); } .ficon.ppt { background: var(--ppt); } .ficon.text { background: var(--muted); } .ficon.bad { background: var(--danger); }
+.ficon.word { background: var(--word); } .ficon.excel { background: var(--excel); } .ficon.ppt { background: var(--ppt); } .ficon.text { background: var(--muted); } .ficon.pdf { background: #c0392b; } .ficon.bad { background: var(--danger); }
 .fmeta { flex: 1; min-width: 0; }
 .fname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fsub { color: var(--muted); font-size: .88rem; }
@@ -316,4 +316,170 @@ th { position: sticky; top: 0; background: var(--surface-2); font-size: .8rem; t
 
 @media print {
   .top, .mode-switch, .stepper, .actions, .explain, .foot { display: none; }
+}
+
+.ficon.pdf { font-size: .66rem; }
+
+/* =====================================================================
+   FERPA-san Edition — PC-98 visual novel look
+   ===================================================================== */
+
+.fs-stage { display: none; }
+
+@font-face {
+  font-family: 'DotGothic16';
+  src: url('../vendor/fonts/DotGothic16-latin.woff2') format('woff2');
+  font-display: swap;
+}
+
+[data-edition="ferpasan"] {
+  --bg: #07061a;
+  --surface: #10104a;
+  --surface-2: #1d1d6b;
+  --text: #f4f1ff;
+  --muted: #a9a6dc;
+  --line: #5a58b0;
+  --brand: #2bd1c0;
+  --brand-ink: #8ff0e2;
+  --brand-soft: #0c3a52;
+  --accent: #ff6fa8;
+  --accent-soft: #3a1648;
+  --key: #ffd34d;
+  --key-soft: #2c2410;
+  --key-line: #ffd34d;
+  --danger: #ff6f6f;
+  --danger-soft: #3a1020;
+  --ok: #8ff0e2;
+  --mark: #6d4ae0;
+  --word: #6f9bff;
+  --excel: #5fd18f;
+  --ppt: #ff9a6b;
+  --shadow: none;
+  --radius: 0;
+  --font: 'DotGothic16', 'MS Gothic', 'Osaka-Mono', ui-monospace, monospace;
+  --frame: 0 0 0 2px #000, 0 0 0 4px #c8c6f0, 0 0 0 6px #000, 6px 6px 0 6px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+[data-edition="ferpasan"] body {
+  /* 2x2 checker dither, like a PC-98 desktop */
+  background: #07061a conic-gradient(#120f33 25%, #07061a 0 50%, #120f33 0 75%, #07061a 0) 0 0 / 4px 4px;
+  font-size: 16px;
+  letter-spacing: .02em;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+[data-edition="ferpasan"] body::after {
+  /* faint CRT scanlines */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, .16) 2px 3px);
+}
+[data-edition="ferpasan"] h1, [data-edition="ferpasan"] h2, [data-edition="ferpasan"] h3,
+[data-edition="ferpasan"] strong, [data-edition="ferpasan"] .btn, [data-edition="ferpasan"] .real { font-weight: 400; }
+[data-edition="ferpasan"] strong { color: var(--key); }
+[data-edition="ferpasan"] *, [data-edition="ferpasan"] *::before, [data-edition="ferpasan"] *::after { border-radius: 0 !important; }
+[data-edition="ferpasan"] :focus-visible { outline: 2px dashed var(--key); outline-offset: 4px; }
+
+/* header */
+[data-edition="ferpasan"] .top { background: #000; border-bottom: 4px double #c8c6f0; }
+[data-edition="ferpasan"] .brand h1 { font-size: 1.9rem; color: #fff; text-shadow: 3px 3px 0 #ff6fa8, 6px 6px 0 #3a2a6e; letter-spacing: .06em; }
+[data-edition="ferpasan"] .fs-edition { display: block; font-size: .78rem; color: var(--brand); text-shadow: none; letter-spacing: .12em; margin-top: 4px; }
+[data-edition="ferpasan"] .tagline { color: var(--muted); }
+[data-edition="ferpasan"] .fs-avatar { width: 64px; height: 64px; overflow: hidden; box-shadow: 0 0 0 2px #000, 0 0 0 4px #c8c6f0; background: #1a1033; }
+[data-edition="ferpasan"] .fs-avatar img { width: 150px; margin: -44px 0 0 -43px; image-rendering: pixelated; display: block; }
+[data-edition="ferpasan"] .privacy-pill { background: #000; border: 2px solid var(--brand); color: var(--brand); }
+[data-edition="ferpasan"] .privacy-pill .dot { background: var(--brand); box-shadow: none; animation: fs-blink 1s steps(1) infinite; }
+
+/* windows */
+[data-edition="ferpasan"] .card, [data-edition="ferpasan"] .how, [data-edition="ferpasan"] .faq {
+  background: var(--surface);
+  border: 0;
+  box-shadow: var(--frame);
+  margin-bottom: 26px;
+}
+[data-edition="ferpasan"] .grid-2 { gap: 26px; }
+[data-edition="ferpasan"] .card-title, [data-edition="ferpasan"] .card-sub { color: #fff; }
+[data-edition="ferpasan"] .card-title::before { content: "\25C6"; color: var(--accent); font-size: .8em; }
+[data-edition="ferpasan"] .key-card { background: #2a1d08; }
+[data-edition="ferpasan"] .key-card .card-sub { color: var(--key); }
+[data-edition="ferpasan"] .success { background: #0c3a52; }
+[data-edition="ferpasan"] .success-ico { background: var(--brand); color: #000; }
+
+/* menu-style mode switch */
+[data-edition="ferpasan"] .mode-switch { background: #000; border: 0; box-shadow: var(--frame); padding: 8px; }
+[data-edition="ferpasan"] .mode-switch button { color: var(--muted); }
+[data-edition="ferpasan"] .mode-switch button[aria-selected="true"] { background: var(--surface-2); color: #fff; }
+[data-edition="ferpasan"] .mode-switch button[aria-selected="true"] strong::before { content: "\25B6 "; color: var(--accent); animation: fs-blink 1s steps(1) infinite; }
+
+/* stepper */
+[data-edition="ferpasan"] .stepper .num { background: #000; border: 2px solid var(--line); }
+[data-edition="ferpasan"] .stepper li.is-current .num { background: var(--accent); border-color: #fff; color: #000; }
+[data-edition="ferpasan"] .stepper li.is-done .num { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); }
+[data-edition="ferpasan"] .stepper li:not(:last-child)::after { height: 0; border-top: 3px dotted var(--line); background: none; }
+[data-edition="ferpasan"] .stepper li.is-done::after { border-top-color: var(--brand); }
+
+/* beveled buttons */
+[data-edition="ferpasan"] .btn {
+  background: #2a2a8a; color: #fff; border: 0;
+  box-shadow: inset 2px 2px 0 #8a8ae0, inset -2px -2px 0 #000, 0 0 0 2px #000;
+}
+[data-edition="ferpasan"] .btn:hover:not(:disabled) { background: #3a3aae; filter: none; }
+[data-edition="ferpasan"] .btn:active:not(:disabled) { box-shadow: inset -2px -2px 0 #8a8ae0, inset 2px 2px 0 #000, 0 0 0 2px #000; transform: none; }
+[data-edition="ferpasan"] .btn-primary { background: var(--brand); color: #000; box-shadow: inset 2px 2px 0 #c8fff7, inset -2px -2px 0 #0c5a53, 0 0 0 2px #000; }
+[data-edition="ferpasan"] .btn-primary:hover:not(:disabled) { background: #8ff0e2; }
+[data-edition="ferpasan"] .btn-key { background: var(--key); color: #000; box-shadow: inset 2px 2px 0 #fff3c4, inset -2px -2px 0 #a07000, 0 0 0 2px #000; }
+[data-edition="ferpasan"] .btn-ghost { background: transparent; box-shadow: none; color: var(--muted); }
+[data-edition="ferpasan"] .btn-ghost:hover { background: var(--surface-2); color: #fff; }
+[data-edition="ferpasan"] .link-btn, [data-edition="ferpasan"] .linkish { color: var(--brand); }
+
+/* inputs, drop zones, lists */
+[data-edition="ferpasan"] textarea, [data-edition="ferpasan"] input[type="text"], [data-edition="ferpasan"] input[type="search"] {
+  background: #000; color: var(--brand-ink); border: 2px solid var(--line); caret-color: var(--accent);
+}
+[data-edition="ferpasan"] textarea:focus, [data-edition="ferpasan"] input:focus { border-color: var(--accent) !important; box-shadow: none !important; }
+[data-edition="ferpasan"] .dropzone { background: #000; border: 3px dotted var(--brand); }
+[data-edition="ferpasan"] .dropzone:hover, [data-edition="ferpasan"] .dropzone.is-over { background: #0c1a3a; border-color: var(--accent); transform: none; }
+[data-edition="ferpasan"] .dz-ico { color: var(--accent); }
+[data-edition="ferpasan"] .chip { background: #000; border-color: var(--line); }
+[data-edition="ferpasan"] .file { background: #000; border: 2px solid var(--line); }
+[data-edition="ferpasan"] .ficon::after { display: none; }
+[data-edition="ferpasan"] .fold > summary:hover, [data-edition="ferpasan"] .row:hover { background: var(--surface-2); }
+[data-edition="ferpasan"] .fold > summary::after { border-color: var(--accent); }
+[data-edition="ferpasan"] .badge-rec { background: var(--accent); color: #000; }
+[data-edition="ferpasan"] .alias { background: #000; color: var(--accent); border: 1px solid var(--accent); }
+[data-edition="ferpasan"] .chips .alias { color: var(--key); border-color: var(--key); }
+[data-edition="ferpasan"] .tag { background: #000 !important; border: 1px solid currentColor; }
+[data-edition="ferpasan"] .ctx mark, [data-edition="ferpasan"] .restored mark { background: var(--mark); color: #fff; }
+[data-edition="ferpasan"] .restored { background: #000; color: var(--brand-ink); }
+[data-edition="ferpasan"] .group-head, [data-edition="ferpasan"] .add-name { border-color: var(--line); }
+[data-edition="ferpasan"] th { background: var(--surface-2); }
+[data-edition="ferpasan"] .seg { background: #000; }
+[data-edition="ferpasan"] .seg button[aria-selected="true"] { background: var(--surface-2); color: #fff; box-shadow: none; }
+[data-edition="ferpasan"] .num-badge, [data-edition="ferpasan"] .how-num { background: var(--accent); color: #000; }
+[data-edition="ferpasan"] .checklist li::before { border-color: var(--accent); }
+[data-edition="ferpasan"] .toast { background: #000; color: var(--brand-ink); box-shadow: var(--frame); }
+[data-edition="ferpasan"] .busy-box { background: #000; box-shadow: var(--frame); }
+[data-edition="ferpasan"] .spinner { border-color: var(--line); border-top-color: var(--accent); }
+[data-edition="ferpasan"] .foot::after { content: " \2015 FERPA-san Edition"; color: var(--accent); }
+
+/* the visual novel scene: CG window + dialogue box */
+[data-edition="ferpasan"] .fs-stage { display: grid; grid-template-columns: 300px 1fr; gap: 26px; align-items: end; margin: 30px 0 30px; }
+[data-edition="ferpasan"] .vn-cg { width: 300px; height: 330px; box-shadow: var(--frame); background: #1a1033; }
+[data-edition="ferpasan"] .vn-cg img { width: 300px; height: 330px; display: block; image-rendering: pixelated; animation: fs-in .25s steps(3); }
+[data-edition="ferpasan"] .vn-box { position: relative; min-height: 150px; padding: 30px 26px 26px; background: rgba(4, 4, 30, .92); box-shadow: var(--frame); cursor: pointer; }
+[data-edition="ferpasan"] .vn-name { position: absolute; top: -16px; left: 18px; padding: 4px 14px; background: var(--accent); color: #000; box-shadow: 0 0 0 2px #000, 0 0 0 4px #c8c6f0, 0 0 0 6px #000; letter-spacing: .1em; }
+[data-edition="ferpasan"] .vn-text { margin: 0; font-size: 1.12rem; line-height: 1.8; color: #fff; white-space: pre-wrap; min-height: 3.6em; }
+[data-edition="ferpasan"] .vn-cursor { position: absolute; right: 18px; bottom: 12px; color: var(--accent); visibility: hidden; }
+[data-edition="ferpasan"] .vn-box.is-done .vn-cursor { visibility: visible; animation: fs-blink .8s steps(1) infinite; }
+@keyframes fs-blink { 50% { opacity: 0; } }
+@keyframes fs-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 760px) {
+  [data-edition="ferpasan"] .fs-stage { grid-template-columns: 150px 1fr; gap: 16px; align-items: stretch; }
+  [data-edition="ferpasan"] .vn-cg, [data-edition="ferpasan"] .vn-cg img { width: 150px; height: 165px; }
+  [data-edition="ferpasan"] .vn-box { min-height: 0; padding: 24px 14px 18px; }
+  [data-edition="ferpasan"] .vn-text { font-size: 1rem; line-height: 1.6; }
+  [data-edition="ferpasan"] .brand h1 { font-size: 1.5rem; }
+}
+@media (prefers-color-scheme: dark) {
+  [data-edition="ferpasan"] .btn-primary, [data-edition="ferpasan"] .btn-key { color: #000; }
 }
