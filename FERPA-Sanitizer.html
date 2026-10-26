@@ -1,0 +1,2508 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Swap student names for fun code names before using AI. Works offline — your files never leave your computer.">
+  <title>FERPA Sanitizer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 8 13v17c0 15 10 26 24 30 14-4 24-15 24-30V13Z' fill='%230f766e'/%3E%3Cpath d='M21 33l8 8 15-17' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+/* FERPA Sanitizer — calm, friendly, readable. No external fonts (works offline). */
+
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --text: #1c2430;
+  --muted: #5b6676;
+  --line: #e1e5eb;
+  --brand: #0f766e;
+  --brand-ink: #0b5a54;
+  --brand-soft: #e3f4f1;
+  --accent: #6d4ae0;
+  --accent-soft: #efeafd;
+  --key: #b45309;
+  --key-soft: #fff6e6;
+  --key-line: #f3cf8f;
+  --danger: #c2410c;
+  --danger-soft: #fdeee6;
+  --ok: #15803d;
+  --mark: #fff1a8;
+  --word: #2b5bb8;
+  --excel: #1d7a45;
+  --ppt: #c4511f;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 16px rgba(16, 24, 40, .06);
+  --radius: 16px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11151b;
+    --surface: #1a2028;
+    --surface-2: #222a34;
+    --text: #e8edf3;
+    --muted: #9aa6b5;
+    --line: #2d3642;
+    --brand: #2bb3a6;
+    --brand-ink: #7fe0d6;
+    --brand-soft: #143430;
+    --accent: #a48cff;
+    --accent-soft: #2a2443;
+    --key: #f4b35e;
+    --key-soft: #2c2214;
+    --key-line: #6b4c1f;
+    --danger: #ff9466;
+    --danger-soft: #3a2118;
+    --ok: #4ade80;
+    --mark: #5d4f0e;
+    --word: #7aa5ff;
+    --excel: #5fd18f;
+    --ppt: #ff9a6b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { line-height: 1.25; margin: 0; }
+p { margin: 0 0 .75em; }
+code { font-size: .9em; background: var(--surface-2); padding: .1em .35em; border-radius: 6px; }
+button, input, textarea { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--surface); padding: 8px 14px; border-radius: 8px; z-index: 50; }
+.skip:focus { left: 8px; }
+
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+.wrap-narrow { max-width: 820px; }
+
+/* ---------- header ---------- */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.top-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 16px; padding-bottom: 16px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 42px; height: 42px; flex: none; }
+.brand h1 { font-size: 1.35rem; letter-spacing: -.01em; }
+.tagline { margin: 0; color: var(--muted); font-size: .95rem; }
+.privacy-pill { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px; background: var(--brand-soft); color: var(--brand-ink); font-size: .9rem; }
+.privacy-pill .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent); flex: none; }
+
+/* ---------- mode switch ---------- */
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 24px 0 8px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+.mode-switch button { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 0; border-radius: 13px; background: transparent; cursor: pointer; text-align: left; transition: background .15s; }
+.mode-switch button:hover { background: var(--surface-2); }
+.mode-switch button[aria-selected="true"] { background: var(--brand); color: #fff; }
+.mode-switch strong { display: block; font-size: 1.02rem; }
+.mode-switch small { display: block; opacity: .8; font-size: .85rem; }
+.mode-ico { font-size: 1.6rem; line-height: 1; }
+
+/* ---------- stepper ---------- */
+.stepper { list-style: none; display: flex; gap: 0; padding: 0; margin: 22px 0 18px; counter-reset: s; }
+.stepper li { flex: 1; display: flex; align-items: center; gap: 10px; color: var(--muted); font-weight: 600; position: relative; }
+.stepper li:not(:last-child)::after { content: ""; flex: 1; height: 3px; border-radius: 3px; background: var(--line); margin: 0 12px; }
+.stepper .num { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--line); font-size: .95rem; flex: none; }
+.stepper li.is-current { color: var(--text); }
+.stepper li.is-current .num { border-color: var(--brand); background: var(--brand); color: #fff; }
+.stepper li.is-done .num { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+.stepper li.is-done::after { background: var(--brand); }
+
+/* ---------- cards ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 16px; }
+.card-title { font-size: 1.3rem; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.card-sub { font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.lead { color: var(--muted); font-size: 1.05rem; margin: 0; }
+.hint { color: var(--muted); font-size: .92rem; margin: 8px 0 0; }
+.center { text-align: center; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-2 > .card { margin-bottom: 0; }
+.grid-2 + .card, .grid-2 + .actions { margin-top: 16px; }
+
+/* ---------- dropzone ---------- */
+.dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 36px 20px; border: 2.5px dashed color-mix(in srgb, var(--brand) 45%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--brand-soft) 55%, var(--surface)); cursor: pointer; text-align: center; transition: background .15s, border-color .15s, transform .15s; }
+.dropzone:hover, .dropzone.is-over { background: var(--brand-soft); border-color: var(--brand); }
+.dropzone.is-over { transform: scale(1.01); }
+.dz-ico { width: 52px; height: 52px; color: var(--brand); margin-bottom: 4px; }
+.dz-main { font-size: 1.2rem; font-weight: 700; }
+.dz-sub { color: var(--muted); }
+.linkish { color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.dz-small { padding: 22px 16px; }
+.type-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+.chip { font-size: .8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.chip-word { color: var(--word); } .chip-excel { color: var(--excel); } .chip-ppt { color: var(--ppt); } .chip-text { color: var(--muted); }
+
+/* ---------- file list ---------- */
+.file-list, .out-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+.file-list:empty { margin: 0; }
+.file { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.file.is-error { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: var(--danger-soft); }
+.ficon { width: 36px; height: 42px; border-radius: 6px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: .95rem; flex: none; position: relative; }
+.ficon::after { content: ""; position: absolute; right: 0; top: 0; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--surface) transparent transparent; }
+.ficon.word { background: var(--word); } .ficon.excel { background: var(--excel); } .ficon.ppt { background: var(--ppt); } .ficon.text { background: var(--muted); } .ficon.bad { background: var(--danger); }
+.fmeta { flex: 1; min-width: 0; }
+.fname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fsub { color: var(--muted); font-size: .88rem; }
+.file.is-error .fsub { color: var(--danger); }
+.icon-btn { width: 36px; height: 36px; border: 0; border-radius: 10px; background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--muted); flex: none; font-size: 1.1rem; }
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+/* ---------- folds ---------- */
+.fold { padding: 0; }
+.fold > summary { list-style: none; display: flex; align-items: center; gap: 14px; padding: 18px 24px; cursor: pointer; border-radius: var(--radius); }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: ""; width: 10px; height: 10px; border-right: 2.5px solid var(--muted); border-bottom: 2.5px solid var(--muted); transform: rotate(45deg); margin-left: auto; transition: transform .2s; flex: none; }
+.fold[open] > summary::after { transform: rotate(-135deg); }
+.fold > summary:hover { background: var(--surface-2); }
+.fold-ico { font-size: 1.5rem; }
+.fold-text small { display: block; color: var(--muted); font-size: .9rem; }
+.fold-body { padding: 0 24px 22px; }
+.badge { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; vertical-align: 2px; margin-left: 4px; }
+.badge-rec { background: var(--accent-soft); color: var(--accent); }
+textarea, input[type="text"], input[type="search"] { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface); transition: border-color .15s; }
+textarea { resize: vertical; min-height: 120px; }
+textarea:focus, input[type="text"]:focus, input[type="search"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.key-load { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.opts { display: grid; gap: 10px; }
+.check { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--brand); }
+.check small { color: var(--muted); }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border-radius: 12px; border: 1.5px solid transparent; font-weight: 650; cursor: pointer; text-decoration: none; transition: background .15s, transform .05s, box-shadow .15s; white-space: nowrap; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-lg { min-height: 54px; padding: 12px 26px; font-size: 1.08rem; border-radius: 14px; }
+.btn-primary { background: var(--brand); color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, var(--brand) 35%, transparent); }
+.btn-primary:hover:not(:disabled) { background: var(--brand-ink); }
+@media (prefers-color-scheme: dark) { .btn-primary { color: #06201d; } .btn-primary:hover:not(:disabled) { background: var(--brand-ink); } .mode-switch button[aria-selected="true"] { color: #06201d; } .stepper li.is-current .num { color: #06201d; } }
+.btn-secondary { background: var(--surface); border-color: var(--line); color: var(--text); }
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-ghost { background: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn-key { background: var(--key); color: #fff; }
+@media (prefers-color-scheme: dark) { .btn-key { color: #2a1a05; } }
+.btn-key:hover { filter: brightness(1.08); }
+.btn.full { width: 100%; margin-top: 12px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 24px; flex-wrap: wrap; }
+.actions .btn-primary { margin-left: auto; }
+
+/* ---------- review ---------- */
+.review-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.review-head .card-title { margin-bottom: 4px; }
+.search { position: relative; display: block; width: 220px; }
+.search svg { position: absolute; left: 12px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); }
+.search input { padding-left: 38px; }
+.legend { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 6px; font-size: .8rem; color: var(--muted); }
+.group { margin-top: 18px; }
+.group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 2px 8px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.group-head h3 { font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+.group-head .g-count { color: var(--muted); font-weight: 500; font-size: .9rem; }
+.group-desc { color: var(--muted); font-size: .9rem; margin: 6px 2px 8px; }
+.group.maybe .group-head h3 { color: var(--key); }
+.rows { display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 10px; border-radius: 12px; transition: background .12s, opacity .12s; }
+.row:hover { background: var(--surface-2); }
+.row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--brand); cursor: pointer; }
+.row.is-off .real { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
+.row.is-off .alias { opacity: .5; }
+.real-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.real { font-weight: 700; font-size: 1.02rem; }
+.mentions { color: var(--muted); font-size: .85rem; }
+.ctx { color: var(--muted); font-size: .88rem; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctx mark { background: var(--mark); color: inherit; border-radius: 4px; padding: 0 2px; font-weight: 600; }
+.alias-wrap { display: flex; align-items: center; gap: 6px; }
+.arrow { color: var(--muted); }
+.alias { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 650; font-size: .95rem; white-space: nowrap; }
+.row.is-off .alias-text::after { content: " (kept)"; font-weight: 500; }
+.tag { font-size: .72rem; font-weight: 650; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.tag-roster { background: var(--brand-soft); color: var(--brand-ink); }
+.tag-key { background: var(--key-soft); color: var(--key); }
+.tag-column { background: color-mix(in srgb, var(--excel) 14%, var(--surface)); color: var(--excel); }
+.tag-text { background: var(--surface-2); color: var(--muted); }
+.tag-manual { background: var(--accent-soft); color: var(--accent); }
+.tag-check { background: var(--key-soft); color: var(--key); }
+.empty { text-align: center; color: var(--muted); padding: 22px; border: 1.5px dashed var(--line); border-radius: 12px; }
+.add-name { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.add-name label { display: block; margin-bottom: 8px; }
+.add-row { display: flex; gap: 8px; }
+.add-row input { flex: 1; }
+
+/* ---------- results ---------- */
+.success { display: flex; align-items: center; gap: 18px; background: linear-gradient(135deg, var(--brand-soft), var(--surface) 70%); }
+.success-ico { width: 56px; height: 56px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; flex: none; animation: pop .35s ease-out; }
+.success-ico svg { width: 30px; height: 30px; }
+.success .card-title { margin-bottom: 2px; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.out-list .file { gap: 10px; }
+.out-list .btn { min-height: 38px; padding: 6px 14px; }
+.pic-note { font-size: .82rem; color: var(--key); }
+.key-card { border-color: var(--key-line); background: linear-gradient(180deg, var(--key-soft), var(--surface) 85%); }
+.key-card .card-sub { color: var(--key); }
+.key-preview { margin-top: 14px; }
+.key-preview summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+.table-wrap { max-height: 260px; overflow: auto; margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); }
+th { position: sticky; top: 0; background: var(--surface-2); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.warn-card { border-color: var(--key-line); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 14px; }
+.chips .alias { background: var(--key-soft); color: var(--key); }
+.checklist ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+.checklist li { position: relative; padding-left: 32px; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 2px; width: 20px; height: 20px; border: 2px solid var(--brand); border-radius: 6px; }
+
+/* ---------- restore ---------- */
+.num-badge { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; display: inline-grid; place-items: center; font-size: .95rem; flex: none; }
+@media (prefers-color-scheme: dark) { .num-badge, .success-ico { color: #06201d; } }
+.key-session { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--brand-soft); color: var(--brand-ink); margin-bottom: 12px; font-weight: 600; }
+.ok-ico { width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; flex: none; }
+.seg { display: inline-flex; padding: 4px; background: var(--surface-2); border-radius: 12px; margin-bottom: 12px; }
+.seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 9px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.restored { white-space: pre-wrap; background: var(--surface-2); border-radius: 12px; padding: 16px 18px; max-height: 460px; overflow: auto; line-height: 1.65; }
+.restored mark { background: var(--brand-soft); color: var(--brand-ink); border-radius: 4px; padding: 0 3px; font-weight: 650; }
+.count-pill { font-size: .8rem; font-weight: 650; background: var(--brand-soft); color: var(--brand-ink); padding: 3px 10px; border-radius: 999px; }
+
+/* ---------- explainer ---------- */
+.explain { margin: 40px auto 20px; padding: 0; }
+.explain h2 { font-size: 1.3rem; margin-bottom: 14px; }
+.how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.how { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.how h3 { font-size: 1.02rem; margin: 8px 0 6px; }
+.how p { color: var(--muted); font-size: .93rem; margin: 0; }
+.how-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: .9rem; }
+.code-eg { background: var(--accent-soft); color: var(--accent); border-radius: 6px; padding: 0 6px; font-weight: 650; white-space: nowrap; }
+.faq { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; }
+.faq summary { cursor: pointer; font-weight: 650; }
+.faq ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); }
+.faq p { color: var(--muted); margin: 10px 0 0; }
+.faq strong { color: var(--text); }
+.foot { color: var(--muted); font-size: .85rem; text-align: center; padding-top: 10px; padding-bottom: 40px; }
+
+/* ---------- toast & busy ---------- */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 140%); background: var(--text); color: var(--bg); padding: 12px 20px; border-radius: 12px; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.2); transition: transform .25s ease, opacity .25s; opacity: 0; z-index: 40; max-width: calc(100% - 32px); pointer-events: none; }
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
+.busy { position: fixed; inset: 0; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(2px); display: grid; place-items: center; z-index: 30; }
+.busy-box { display: flex; align-items: center; gap: 14px; background: var(--surface); padding: 18px 24px; border-radius: 14px; box-shadow: var(--shadow); font-weight: 600; }
+.spinner { width: 22px; height: 22px; border: 3px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- small screens ---------- */
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  .grid-2, .how-grid { grid-template-columns: 1fr; }
+  .mode-switch small { display: none; }
+  .mode-switch button { padding: 10px 12px; gap: 8px; }
+  .mode-ico { font-size: 1.3rem; }
+  .stepper .lbl { display: none; }
+  .stepper li.is-current .lbl { display: inline; }
+  .card { padding: 18px; }
+  .fold > summary { padding: 16px 18px; }
+  .fold-body { padding: 0 18px 18px; }
+  .search { width: 100%; }
+  .row { grid-template-columns: auto minmax(0, 1fr); }
+  .row .alias-wrap { grid-column: 2; }
+  .actions .btn-lg { width: 100%; }
+  .add-row { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media print {
+  .top, .mode-switch, .stepper, .actions, .explain, .foot { display: none; }
+}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4 8 13v17c0 15 10 26 24 30 14-4 24-15 24-30V13Z" fill="var(--brand)"/>
+          <path d="M21 33l8 8 15-17" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <h1>FERPA Sanitizer</h1>
+          <p class="tagline">Swap student names for code names before you use AI.</p>
+        </div>
+      </div>
+      <div class="privacy-pill" title="This page has no server. Your files are read and changed right here in your browser.">
+        <span class="dot" aria-hidden="true"></span>
+        <span><strong>Private:</strong> runs on this computer. Nothing is uploaded.</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <nav class="mode-switch" role="tablist" aria-label="What do you want to do?">
+      <button role="tab" id="tab-hide" aria-controls="panel-hide" aria-selected="true">
+        <span class="mode-ico" aria-hidden="true">🙈</span>
+        <span><strong>Hide student names</strong><small>Before you paste into AI</small></span>
+      </button>
+      <button role="tab" id="tab-restore" aria-controls="panel-restore" aria-selected="false" tabindex="-1">
+        <span class="mode-ico" aria-hidden="true">🔁</span>
+        <span><strong>Put names back</strong><small>After the AI answers</small></span>
+      </button>
+    </nav>
+
+    <!-- ============ HIDE NAMES ============ -->
+    <section id="panel-hide" role="tabpanel" aria-labelledby="tab-hide">
+      <ol class="stepper" aria-label="Progress">
+        <li data-step="1" class="is-current"><span class="num">1</span><span class="lbl">Add files</span></li>
+        <li data-step="2"><span class="num">2</span><span class="lbl">Check names</span></li>
+        <li data-step="3"><span class="num">3</span><span class="lbl">Download</span></li>
+      </ol>
+
+      <!-- Step 1 -->
+      <div class="step" id="step-1">
+        <div class="card">
+          <h2 class="card-title">Which files have student names in them?</h2>
+          <label class="dropzone" id="dropzone" tabindex="0">
+            <input type="file" id="file-input" multiple accept=".docx,.docm,.dotx,.xlsx,.xlsm,.pptx,.pptm,.txt,.md,.csv,.tsv,.doc,.xls,.ppt,.pdf,.odt,.ods,.odp,.rtf" hidden>
+            <svg class="dz-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 34h-2a9 9 0 0 1-1-18 12 12 0 0 1 23-3 10 10 0 0 1 3 20h-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 22v18m-7-11 7-7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="dz-main">Drag your files here</span>
+            <span class="dz-sub">or <span class="linkish">choose files</span> from your computer</span>
+            <span class="type-chips" aria-label="Supported file types">
+              <span class="chip chip-word">Word</span><span class="chip chip-excel">Excel</span><span class="chip chip-ppt">PowerPoint</span><span class="chip chip-text">Text &amp; CSV</span>
+            </span>
+          </label>
+          <ul class="file-list" id="file-list" aria-live="polite"></ul>
+          <p class="hint center" id="sample-hint">Just exploring? <button class="link-btn" id="try-sample" type="button">Try it with a sample file</button></p>
+        </div>
+
+        <details class="card fold" id="roster-fold">
+          <summary>
+            <span class="fold-ico" aria-hidden="true">📋</span>
+            <span class="fold-text"><strong>Paste your class list</strong> <span class="badge badge-rec">Recommended</span><small>Catches every name, even unusual ones.</small></span>
+          </summary>
+          <div class="fold-body">
+            <label for="roster" class="sr-only">Class list, one student per line</label>
+            <textarea id="roster" rows="6" spellcheck="false" placeholder="One student per line, any of these work:&#10;Emma Johnson&#10;Johnson, Liam&#10;Sofia (Sofi) Martinez"></textarea>
+            <p class="hint">Copy a column straight from your gradebook, Google Sheet, or student information system. This list is <strong>not saved</strong> anywhere.</p>
+          </div>
+        </details>
+
+        <details class="card fold" id="key-fold">
+          <summary>
+            <span class="fold-ico" aria-hidden="true">🔑</span>
+            <span class="fold-text"><strong>Reuse a key from before</strong><small>Students keep the same code names across assignments.</small></span>
+          </summary>
+          <div class="fold-body">
+            <div class="key-load">
+              <label class="btn btn-secondary">
+                <input type="file" id="key-input" accept=".csv,.txt" hidden>
+                Choose key file…
+              </label>
+              <span id="key-status" class="hint" aria-live="polite">No key loaded — that's fine for first-timers.</span>
+            </div>
+          </div>
+        </details>
+
+        <details class="card fold" id="opts-fold">
+          <summary>
+            <span class="fold-ico" aria-hidden="true">⚙️</span>
+            <span class="fold-text"><strong>Also hide…</strong><small>Emails, phone numbers, ID numbers and more.</small></span>
+          </summary>
+          <div class="fold-body opts">
+            <label class="check"><input type="checkbox" id="opt-emails" checked> <span>Email addresses</span></label>
+            <label class="check"><input type="checkbox" id="opt-phones" checked> <span>Phone numbers</span></label>
+            <label class="check"><input type="checkbox" id="opt-ids" checked> <span>Student ID numbers <small>(6–10 digits)</small></span></label>
+            <label class="check"><input type="checkbox" id="opt-author" checked> <span>Author name in the file's properties</span></label>
+          </div>
+        </details>
+
+        <div class="actions">
+          <span class="hint" id="step1-hint">Add at least one file to continue.</span>
+          <button class="btn btn-primary btn-lg" id="btn-find" disabled>Find names <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step" id="step-2" hidden>
+        <div class="card">
+          <div class="review-head">
+            <div>
+              <h2 class="card-title" id="review-title">Check the names we found</h2>
+              <p class="lead" id="review-summary"></p>
+            </div>
+            <div class="review-tools">
+              <label class="search">
+                <span class="sr-only">Filter names</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="search" id="filter" placeholder="Filter names">
+              </label>
+            </div>
+          </div>
+
+          <div class="legend" aria-hidden="true">
+            <span><span class="tag tag-roster">Class list</span></span>
+            <span><span class="tag tag-column">Name column</span></span>
+            <span><span class="tag tag-text">Found in text</span></span>
+            <span><span class="tag tag-check">Double-check</span></span>
+          </div>
+
+          <div id="groups"></div>
+
+          <form class="add-name" id="add-name">
+            <label for="add-name-input"><strong>Missed someone?</strong> Type their name and we'll hide it too.</label>
+            <div class="add-row">
+              <input id="add-name-input" type="text" placeholder="e.g. Xiomara Delgado" autocomplete="off">
+              <button class="btn btn-secondary" type="submit">Add name</button>
+            </div>
+          </form>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost" id="btn-back-1"><span aria-hidden="true">←</span> Back</button>
+          <button class="btn btn-primary btn-lg" id="btn-run">Hide these names <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step" id="step-3" hidden>
+        <div class="card success">
+          <div class="success-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div>
+            <h2 class="card-title" id="done-title">Your files are ready</h2>
+            <p class="lead" id="done-summary"></p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-sub"><span aria-hidden="true">📄</span> Safe to share with AI</h3>
+            <ul class="out-list" id="out-list"></ul>
+            <button class="btn btn-secondary full" id="btn-zip" hidden>Download all as .zip</button>
+            <p class="hint" id="zip-note" hidden>The key is <strong>not</strong> in the .zip, so you can't upload it by accident.</p>
+          </div>
+
+          <div class="card key-card">
+            <h3 class="card-sub"><span aria-hidden="true">🔑</span> Your key — keep it private</h3>
+            <p>The key is the only way to turn code names back into real names. <strong>Save it on your computer. Never upload it to an AI tool.</strong></p>
+            <div class="btn-row">
+              <button class="btn btn-key" id="btn-key">Download key</button>
+              <button class="btn btn-ghost" id="btn-print-key">Print key</button>
+            </div>
+            <details class="key-preview">
+              <summary>Show who is who</summary>
+              <div class="table-wrap"><table id="key-table"><thead><tr><th>Real</th><th>Code name</th></tr></thead><tbody></tbody></table></div>
+            </details>
+          </div>
+        </div>
+
+        <div class="card warn-card" id="leftover-card" hidden>
+          <h3 class="card-sub"><span aria-hidden="true">🔎</span> A second look found these. Are they names?</h3>
+          <p class="hint">We re-checked the finished files. If any of these are people, go back and add them.</p>
+          <div class="chips" id="leftovers"></div>
+          <button class="btn btn-secondary" id="btn-fix-leftovers">Go back and hide these</button>
+        </div>
+
+        <div class="card checklist">
+          <h3 class="card-sub">Before you upload, take 30 seconds:</h3>
+          <ul>
+            <li>Open the <em>-sanitized</em> file and skim it.</li>
+            <li id="pics-tip">Look at any pictures or screenshots. Text inside images can't be changed here.</li>
+            <li>Upload <strong>only</strong> the sanitized file — never the key.</li>
+            <li>When the AI answers, come back and choose <button class="link-btn" id="go-restore">Put names back</button>.</li>
+          </ul>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-ghost" id="btn-back-2"><span aria-hidden="true">←</span> Change names</button>
+          <button class="btn btn-secondary" id="btn-restart">Start over with new files</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PUT NAMES BACK ============ -->
+    <section id="panel-restore" role="tabpanel" aria-labelledby="tab-restore" hidden>
+      <div class="grid-2 restore-grid">
+        <div class="card">
+          <h2 class="card-title"><span class="num-badge">1</span> Your key</h2>
+          <div id="r-key-session" class="key-session" hidden>
+            <span class="ok-ico" aria-hidden="true">✓</span>
+            <span id="r-key-session-text">Using the key you just made.</span>
+          </div>
+          <label class="dropzone dz-small" id="r-key-drop" tabindex="0">
+            <input type="file" id="r-key-input" accept=".csv,.txt" hidden>
+            <span class="dz-main">Drop your key file here</span>
+            <span class="dz-sub">or <span class="linkish">choose it</span> (it ends in <code>-KEY.csv</code>)</span>
+          </label>
+          <p class="hint" id="r-key-status" aria-live="polite"></p>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title"><span class="num-badge">2</span> What the AI gave you</h2>
+          <div class="seg" role="tablist" aria-label="Input type">
+            <button role="tab" aria-selected="true" id="r-seg-text">Paste text</button>
+            <button role="tab" aria-selected="false" id="r-seg-file">Use a file</button>
+          </div>
+          <div id="r-text-wrap">
+            <label for="r-input" class="sr-only">AI response</label>
+            <textarea id="r-input" rows="8" placeholder="Paste the AI's answer here. Example: &quot;Fluffy Unicorn 45 did a great job organizing ideas…&quot;"></textarea>
+          </div>
+          <div id="r-file-wrap" hidden>
+            <label class="dropzone dz-small" id="r-file-drop" tabindex="0">
+              <input type="file" id="r-file-input" multiple accept=".docx,.docm,.dotx,.xlsx,.xlsm,.pptx,.pptm,.txt,.md,.csv,.tsv" hidden>
+              <span class="dz-main">Drop the AI's file here</span>
+              <span class="dz-sub">Word, Excel, PowerPoint, text or CSV</span>
+            </label>
+            <ul class="out-list" id="r-file-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="r-output-card" hidden>
+        <div class="review-head">
+          <h2 class="card-title">With real names <span class="count-pill" id="r-count"></span></h2>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="r-copy">Copy text</button>
+            <button class="btn btn-ghost" id="r-download">Download .txt</button>
+          </div>
+        </div>
+        <div class="restored" id="r-output" tabindex="0" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="explain wrap-narrow" aria-labelledby="how-title">
+      <h2 id="how-title">How it works</h2>
+      <div class="how-grid">
+        <div class="how"><span class="how-num">1</span><h3>Finds names</h3><p>Uses your class list, column headings like “Student Name”, and a built-in list of nearly 1,000 first names. You approve every one.</p></div>
+        <div class="how"><span class="how-num">2</span><h3>Swaps in code names</h3><p>Each student gets a random code name like <span class="code-eg">Fluffy Unicorn 45</span>. “Emma” becomes “Fluffy” and “Johnson” becomes “Unicorn 45”, so the writing still reads naturally.</p></div>
+        <div class="how"><span class="how-num">3</span><h3>Keeps a private key</h3><p>The key lists who is who. It stays with you, so you can put the real names back into whatever the AI writes.</p></div>
+      </div>
+      <details class="faq">
+        <summary>Why code names like “Fluffy Unicorn 45”?</summary>
+        <ul>
+          <li><strong>Random, not reversible.</strong> Code names are picked at random. They don't use initials, so they reveal nothing about the student.</li>
+          <li><strong>Consistent.</strong> The same student gets the same code name in every file you process together, or later if you reuse the key. Siblings share the animal part, just like a real family name.</li>
+          <li><strong>Easy to put back.</strong> Silly words like “Fluffy” almost never appear in schoolwork, so swapping real names back in is accurate.</li>
+          <li><strong>Number = unique.</strong> The number keeps two students apart even if their code names look alike.</li>
+        </ul>
+      </details>
+      <details class="faq">
+        <summary>Is this really offline?</summary>
+        <p>Yes. This page has no server and makes no network requests. You can turn off Wi-Fi and it still works. Download the single-file version, save it to your desktop, and double-click it any time.</p>
+      </details>
+      <details class="faq">
+        <summary>What it can't do</summary>
+        <ul>
+          <li>Read text inside pictures, screenshots, or scanned PDFs.</li>
+          <li>Open old <code>.doc</code>/<code>.xls</code>/<code>.ppt</code> files or PDFs. Save them as .docx/.xlsx/.pptx first.</li>
+          <li>Promise perfection. Always skim the result before you share it. This tool helps you follow FERPA, but it isn't legal advice.</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="foot wrap">FERPA Sanitizer · Free &amp; open source · Your files never leave this device.</footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="busy" id="busy" hidden><div class="busy-box"><span class="spinner" aria-hidden="true"></span><span id="busy-text">Working…</span></div></div>
+
+  <script>
+/*
+ * Minimal ZIP reader/writer for Office files (.docx/.xlsx/.pptx are ZIP archives).
+ * Zero dependencies: uses the browser's built-in CompressionStream/DecompressionStream,
+ * so everything stays on this computer and works with no internet connection.
+ */
+(function (global) {
+  'use strict';
+
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+
+  function crc32(bytes) {
+    let c = 0xffffffff;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  }
+
+  async function pipeThrough(bytes, stream) {
+    const out = new Blob([bytes]).stream().pipeThrough(stream);
+    return new Uint8Array(await new Response(out).arrayBuffer());
+  }
+
+  const inflate = (bytes) => pipeThrough(bytes, new DecompressionStream('deflate-raw'));
+  const deflate = (bytes) => pipeThrough(bytes, new CompressionStream('deflate-raw'));
+
+  const utf8 = new TextDecoder('utf-8');
+  const cp437ish = new TextDecoder('latin1');
+  const enc = new TextEncoder();
+
+  class ZipEntry {
+    constructor(name, method, crc, compressed, size) {
+      this.name = name;
+      this.method = method;
+      this.crc = crc;
+      this.compressed = compressed; // raw bytes as stored in the archive
+      this.size = size;
+      this._data = null; // uncompressed bytes once read or replaced
+      this.modified = false;
+    }
+    async bytes() {
+      if (this._data) return this._data;
+      if (this.method === 0) this._data = this.compressed;
+      else if (this.method === 8) this._data = await inflate(this.compressed);
+      else throw new Error('Unsupported compression in file part "' + this.name + '"');
+      return this._data;
+    }
+    async text() {
+      return utf8.decode(await this.bytes());
+    }
+    setText(str) {
+      this._data = enc.encode(str);
+      this.modified = true;
+    }
+  }
+
+  class ZipArchive {
+    constructor(entries) {
+      this.entries = entries; // ordered array of ZipEntry
+      this.byName = new Map(entries.map((e) => [e.name, e]));
+    }
+
+    static async read(buffer) {
+      const bytes = new Uint8Array(buffer);
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      let eocd = -1;
+      for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+        if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+      }
+      if (eocd < 0) throw new Error('This file does not look like a valid Office document.');
+      const count = view.getUint16(eocd + 10, true);
+      let p = view.getUint32(eocd + 16, true);
+      if (p === 0xffffffff) throw new Error('This file is too large to process (ZIP64).');
+      const entries = [];
+      for (let i = 0; i < count; i++) {
+        if (view.getUint32(p, true) !== 0x02014b50) throw new Error('Damaged file (bad directory).');
+        const flags = view.getUint16(p + 8, true);
+        const method = view.getUint16(p + 10, true);
+        const crc = view.getUint32(p + 16, true);
+        const csize = view.getUint32(p + 20, true);
+        const usize = view.getUint32(p + 24, true);
+        const nlen = view.getUint16(p + 28, true);
+        const xlen = view.getUint16(p + 30, true);
+        const clen = view.getUint16(p + 32, true);
+        const local = view.getUint32(p + 42, true);
+        const nameBytes = bytes.subarray(p + 46, p + 46 + nlen);
+        const name = (flags & 0x800 ? utf8 : cp437ish).decode(nameBytes);
+        const lnlen = view.getUint16(local + 26, true);
+        const lxlen = view.getUint16(local + 28, true);
+        const start = local + 30 + lnlen + lxlen;
+        entries.push(new ZipEntry(name, method, crc, bytes.subarray(start, start + csize), usize));
+        p += 46 + nlen + xlen + clen;
+      }
+      return new ZipArchive(entries);
+    }
+
+    get(name) { return this.byName.get(name); }
+    names() { return this.entries.map((e) => e.name); }
+
+    async toBlob(mimeType) {
+      const chunks = [];
+      const central = [];
+      let offset = 0;
+      const now = new Date();
+      const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+      const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+
+      for (const e of this.entries) {
+        let method = e.method, crc = e.crc, data = e.compressed, size = e.size;
+        if (e.modified) {
+          const raw = e._data;
+          crc = crc32(raw);
+          size = raw.length;
+          data = await deflate(raw);
+          method = 8;
+        }
+        const nameBytes = enc.encode(e.name);
+        const lh = new DataView(new ArrayBuffer(30));
+        lh.setUint32(0, 0x04034b50, true);
+        lh.setUint16(4, 20, true);
+        lh.setUint16(6, 0x800, true);
+        lh.setUint16(8, method, true);
+        lh.setUint16(10, dosTime, true);
+        lh.setUint16(12, dosDate, true);
+        lh.setUint32(14, crc, true);
+        lh.setUint32(18, data.length, true);
+        lh.setUint32(22, size, true);
+        lh.setUint16(26, nameBytes.length, true);
+        lh.setUint16(28, 0, true);
+        chunks.push(new Uint8Array(lh.buffer), nameBytes, data);
+
+        const ch = new DataView(new ArrayBuffer(46));
+        ch.setUint32(0, 0x02014b50, true);
+        ch.setUint16(4, 20, true);
+        ch.setUint16(6, 20, true);
+        ch.setUint16(8, 0x800, true);
+        ch.setUint16(10, method, true);
+        ch.setUint16(12, dosTime, true);
+        ch.setUint16(14, dosDate, true);
+        ch.setUint32(16, crc, true);
+        ch.setUint32(20, data.length, true);
+        ch.setUint32(24, size, true);
+        ch.setUint16(28, nameBytes.length, true);
+        ch.setUint32(42, offset, true);
+        central.push(new Uint8Array(ch.buffer), nameBytes);
+        offset += 30 + nameBytes.length + data.length;
+      }
+      const cdSize = central.reduce((n, c) => n + c.length, 0);
+      const end = new DataView(new ArrayBuffer(22));
+      end.setUint32(0, 0x06054b50, true);
+      end.setUint16(8, this.entries.length, true);
+      end.setUint16(10, this.entries.length, true);
+      end.setUint32(12, cdSize, true);
+      end.setUint32(16, offset, true);
+      return new Blob([...chunks, ...central, new Uint8Array(end.buffer)], { type: mimeType || 'application/zip' });
+    }
+
+    /** Build a brand-new archive from {name: Uint8Array|string} (used for "Download all"). */
+    static fromFiles(files) {
+      const entries = files.map(({ name, data }) => {
+        const e = new ZipEntry(name, 0, 0, new Uint8Array(0), 0);
+        e._data = typeof data === 'string' ? enc.encode(data) : data;
+        e.modified = true;
+        return e;
+      });
+      return new ZipArchive(entries);
+    }
+  }
+
+  global.FZip = { ZipArchive, crc32 };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+  <script>
+/*
+ * Word lists used to find names and build code names. All local, no network.
+ */
+(function (global) {
+  'use strict';
+
+  const split = (s) => s.trim().split(/\s+/);
+
+  // Common US K-12 first names across many backgrounds. Used only as a "seed" to spot
+  // names in ordinary sentences — a pasted class list is always more accurate.
+  const FIRST_NAMES = split(`
+    Aaliyah Aaron Abby Abdul Abdullah Abel Abigail Abraham Abril Ada Adam Adan Addison Adeline Adrian Adriana Adrianna
+    Agustin Ahmad Ahmed Aidan Aiden Aileen Aisha Aiyana Akira Alaina Alan Alana Alani Alayna Albert Alberto Alec
+    Alejandra Alejandro Alessandra Alex Alexa Alexander Alexandra Alexandria Alexia Alexis Alfred Alfredo Ali Alia Alice
+    Alicia Alina Alisha Alison Alissa Allison Alma Alondra Alyssa Amanda Amani Amara Amari Amaya Amber Amelia Amir Amira
+    Amy Ana Anaya Anderson Andre Andrea Andres Andrew Andy Angel Angela Angelica Angelina Angelo Angie Anika Anita Ann
+    Anna Annabelle Anne Annie Anthony Antoine Antonio Anya Aphrodite Arabella Archer Archie Aria Ariana Arianna Ariel
+    Arjun Arlo Armando Arnav Arthur Arturo Aryan Asher Ashley Ashton Asia Athena Atticus Aubree Aubrey Audrey August
+    Aurora Austin Autumn Ava Avery Axel Aya Ayaan Ayden Ayla Aylin Ayesha Barbara Baylee Beatrice Beau Bella Ben Benjamin
+    Bennett Bentley Bernard Beth Bethany Betty Bianca Billy Blake Blakely Bobby Bodhi Brady Braxton Brayden Braylon Brenda
+    Brendan Brenna Brennan Brent Brett Brian Briana Brianna Bridget Brielle Brody Brooke Brooklyn Brooklynn Bruce Bruno
+    Bryan Bryce Bryson Byron Caden Caiden Caleb Callie Calvin Camden Cameron Camila Camille Camilo Candace Cara Carina
+    Carl Carla Carlos Carly Carmen Carolina Caroline Carson Carter Casey Cassandra Cassidy Catalina Catherine Cayden Cecilia
+    Cedric Celeste Cesar Chance Chandler Charlie Charles Charlotte Chase Chelsea Cheyenne Chloe Chris Christian Christina
+    Christopher Ciara Cindy Claire Clara Clarissa Claudia Clayton Clementine Cody Colby Cole Colin Colton Connor Conor
+    Cooper Cora Corbin Corey Cristian Cristina Cruz Crystal Cynthia Daisy Dakota Dallas Dalton Damian Damien Damon Dana
+    Daniel Daniela Daniella Danielle Danny Dante Daphne Darius Darnell David Dawson Dean Deandre Deborah Declan Deja
+    Delaney Delilah Demetrius Denise Dennis Derek Derrick Desmond Destiny Devin Devon Dexter Diana Diego Dillon Dimitri
+    Dominic Dominick Donovan Dorothy Douglas Drake Dylan Easton Eden Edgar Eduardo Edward Edwin Eileen Elaine Eleanor
+    Elena Eli Elias Elijah Elisa Elise Eliza Elizabeth Ella Elle Ellie Elliot Elliott Eloise Elsa Elena Emanuel Ember
+    Emerson Emery Emilia Emiliano Emilio Emily Emma Emmanuel Emmett Emmy Enrique Enzo Eric Erica Erick Erik Erin Esme
+    Esmeralda Esperanza Esteban Esther Ethan Eva Evan Evangeline Evelyn Everett Ezekiel Ezra Fabian Farah Fatima Felix
+    Fernanda Fernando Finley Finn Fiona Francesca Francisco Frankie Franklin Freddy Gabriel Gabriela Gabriella Gabrielle
+    Gael Gage Garrett Gavin Gemma Genesis Genevieve George Georgia Gerardo Gia Giana Gianna Gideon Gilberto Gina Giovanni
+    Giselle Gracie Graham Grant Grayson Gregory Greta Griffin Guadalupe Guillermo Gustavo Hadley Hailey Haley Hamza Hana
+    Hank Hannah Harley Harlow Harmony Harper Harrison Harry Harvey Hassan Hayden Hazel Heaven Hector Heidi Helen Henry
+    Hiroshi Holden Hudson Hugo Hussein Ian Ibrahim Iker Imani Inaya Ingrid Irene Isaac Isabel Isabela Isabella Isabelle
+    Isaiah Isaias Isla Ismael Israel Itzel Ivan Izabella Jace Jack Jackson Jacob Jacqueline Jada Jaden Jaime Jake Jakob
+    Jalen Jamal Jamar James Jamie Jamir Jamison Jana Jane Janelle Janet Jared Jasmin Jasmine Jason Jasper Javier Javon
+    Jaxon Jaxson Jayce Jayden Jaylen Jaylin Jayla Jazmin Jean Jeffrey Jenna Jennifer Jeremiah Jeremy Jesse Jessica Jesus
+    Jett Jillian Jimena Jimmy Joanna Joaquin Jocelyn Joel Johan John Johnny Jonah Jonathan Jordan Jordyn Jorge Jose
+    Joseph Josephine Joshua Josiah Josie Josue Journey Jovan Juan Judah Jude Julia Julian Juliana Julianna Julie Juliet
+    Julio Julius Justin Kai Kaia Kailey Kaitlyn Kaleb Kali Kamari Kamila Kara Kareem Karen Karim Karina Karla Karson
+    Kasey Kate Katelyn Katherine Kathryn Katie Kayden Kaylee Kayla Keegan Keira Keith Kellan Kelly Kelsey Kendall
+    Kendra Kendrick Kennedy Kenneth Kenji Kenzie Keon Kevin Khalil Khloe Kiara Kieran Kimberly Kimora King Kinsley
+    Kira Knox Kobe Kofi Kora Kristen Kristian Kyla Kyle Kylie Kyrie Laila Lainey Lana Landon Laura Lauren Layla Leah
+    Leila Leilani Leland Leo Leon Leonardo Leslie Levi Lexi Liam Lila Liliana Lillian Lilly Lily Lincoln Linda Lindsey
+    Lisa Logan Lola London Londyn Lorenzo Louis Luca Lucas Lucia Luciana Lucy Luis Luka Lukas Luke Luna Lydia Lyla
+    Mackenzie Macy Maddox Madeline Madelyn Madison Mae Maeve Magnus Maia Makayla Malachi Malakai Malcolm Malia Maliyah
+    Manuel Marco Marcos Marcus Margaret Maria Mariah Mariam Mariana Marisol Marissa Marley Marshall Martin Martina
+    Marvin Mary Mateo Mathias Matias Matthew Mauricio Maverick Maya Mckenzie Megan Mehmet Mei Melanie Melissa Melody
+    Mercy Meredith Mia Micah Michael Michaela Michelle Miguel Mila Milan Miles Miley Miller Milo Mina Miranda Miriam
+    Mohamed Mohammad Mohammed Moises Molly Monica Monique Morgan Moses Muhammad Mustafa Myles Nadia Naomi Natalia
+    Natalie Nathan Nathaniel Nayeli Neha Nehemiah Nevaeh Nia Nicholas Nicole Nikolai Nina Noah Noelle Nolan Nora Norah
+    Nyla Octavia Oliver Olivia Omar Orion Oscar Owen Pablo Paige Paisley Paola Paris Parker Patricia Patrick Paul Paula
+    Payton Penelope Peter Peyton Phillip Phoebe Piper Precious Presley Preston Priscilla Priya Quentin Quincy Quinn
+    Rachel Raelynn Rafael Raheem Rahul Ramon Randy Raphael Raquel Rashad Raul Raven Reagan Rebecca Reese Reggie
+    Reginald Reid Remi Remington Renata Rhett Ricardo Richard Ricky Riley Rishi Rocco Rodrigo Roman Romeo Ronald Ronan
+    Rory Rosa Rosalie Rowan Ruben Ryan Ryder Rylan Rylee Sabrina Sadie Sage Saif Salma Salvador Sam Samantha Samara
+    Samir Samson Samuel Santiago Santino Sara Sarah Sasha Savannah Sawyer Scarlett Sean Sebastian Selena Serena Sergio
+    Seth Shane Shawn Shayla Sheldon Shelby Sienna Sierra Silas Simon Simone Skylar Sloane Sofia Sophia Sophie Spencer
+    Stella Stephanie Stephen Steven Sydney Sylvia Talia Tamara Tanner Tatiana Taylor Teagan Terrance Terrell Tessa
+    Thea Theo Theodore Thiago Thomas Tiana Tiffany Timothy Tobias Tommy Tony Trent Trevor Trinity Tristan Troy Tyler
+    Tyrone Tyson Uriel Valentina Valeria Valerie Vanessa Vera Veronica Victor Victoria Vincent Violet Vivian Wade
+    Walker Wesley Weston Whitney William Willow Wyatt Xander Xavier Ximena Yahir Yara Yasmin Yousef Yusuf Zachary
+    Zahra Zain Zander Zane Zara Zariah Zayden Zayn Zion Zoe Zoey
+    Will May June April Grace Hope Joy Faith Mark Bill Rose Summer Dawn Ray Sky River Ivy Daisy Iris Jade Ruby Pearl
+    Olive Hunter Mason Cash Jack Frank Sunny Angel Star Drew Gene Ginger Holly Heather Robin Wren Brooks Glen Dale
+    Pat Sue Don Max Kit Nova Royal Rich Tucker Harper Lane Reed Ridge Stone Sterling Ever Legend Ace Cole
+  `);
+
+  // First names that are also everyday English words. We match these more carefully
+  // (only when capitalized, and not at the start of a sentence unless a last name follows).
+  const COMMON_WORD_NAMES = new Set(split(`
+    will may june april august grace hope joy faith mark bill rose summer autumn dawn art ray sky river ivy lily daisy
+    iris violet jasmine hazel olive ruby pearl amber crystal destiny harmony honor justice king major chase hunter mason
+    cash rich guy jack frank sunny storm rain angel star patience prince page paige drew gene sage jade ginger holly
+    heather robin wren charity brook brooks glen dale cliff pat sue don rod sandy rusty buddy bob ace berry cole lane
+    reed ridge stone sterling ever nova journey legend royal true blue kit max tucker heaven precious mercy miller
+    parker carter walker baker cooper archer taylor paris london dallas austin chandler sydney madison jordan georgia
+    marshall trinity genesis
+  `));
+
+  // Words that are never names (used when guessing last names, and to filter noise).
+  const NOT_NAMES = new Set(split(`
+    a an the and or but nor so yet for of in on at by to from with without into onto about above below after before
+    during since until than then this that these those there here when where why how what which who whom whose is are
+    was were be been being am do does did done has have had having can could should would will shall may might must
+    not no yes i me my mine we us our ours you your yours he him his she her hers it its they them their theirs
+    mr mrs ms miss mx dr prof sir madam
+    monday tuesday wednesday thursday friday saturday sunday january february march april may june july august
+    september october november december jan feb mar apr jun jul aug sep sept oct nov dec spring summer fall autumn winter
+    math maths mathematics english ela science history reading writing spelling grammar art music pe gym health
+    biology chemistry physics geometry algebra calculus statistics spanish french german latin chinese japanese
+    social studies economics government civics geography technology coding computer computers stem steam band choir
+    orchestra theater theatre drama library lunch recess homeroom advisory
+    grade grades class classes period unit chapter lesson quiz test exam final midterm homework assignment project
+    essay report rubric score scores points total average mean median goal goals iep plan meeting notes note
+    student students teacher teachers parent parents guardian guardians principal counselor school district room
+    team group table row column page section part question questions answer answers
+    good great excellent strong weak needs improvement progress shows showed made makes working works worked
+    very really also just only even still always never often sometimes usually today tomorrow yesterday week weeks
+    day days month months year years morning afternoon evening night
+    north south east west street st road rd avenue ave lane ln drive dr court ct boulevard blvd
+    american african asian european hispanic latino latina native indian
+    god jesus christ christmas easter thanksgiving halloween hanukkah ramadan
+    all any each every some many most more less few both either neither other another such same own
+    first last next previous new old high middle elementary junior senior freshman sophomore
+    okay ok please thanks thank dear hello hi hey regards sincerely best yours
+    attendance absent present tardy late early behavior participation effort
+  `));
+
+  // Honorifics that usually precede an adult's last name.
+  const HONORIFICS = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Dr', 'Coach', 'Prof'];
+
+  // Whimsical words picked because they almost never appear in real schoolwork.
+  // That makes "putting names back" accurate later. None of them are real first names.
+  const ADJECTIVES = split(`
+    Fluffy Sparkly Zesty Giggly Bouncy Snazzy Glittery Wiggly Cosmic Jazzy Breezy Toasty Fuzzy Twinkly Bubbly
+    Peppy Dizzy Snuggly Zippy Spunky Frosty Minty Velvety Puffy Squishy Wobbly Jolly Cheery Dazzling Plucky Perky
+    Sprightly Chirpy Doodly Fizzy Glimmery Hoppy Jiggly Kooky Loopy Merry Nifty Quirky Rosy Shimmery Silly Snappy
+    Sparkling Spiffy Swirly Tickly Tippy Tootly Twirly Wacky Whirly Whimsy Wiggy Zany Zippity Blissful Bubbling
+    Chipper Cozy Crinkly Curly Dapper Dreamy Fancy Feathery Flappy Flippy Floaty Fluttery Frisky Gleeful Glowing
+    Glowy Groovy Gusty Happy Hearty Humming Jaunty Jingly Jumpy Lucky Marshmallowy Mellow Misty Moony Noodly Peachy
+    Pebbly Pillowy Plushy Polka Popping Pudgy Purring Rainbow Rumbly Rustling Shiny Sleepy Smiley Sniffly Snoozy
+    Snowy Spotty Springy Sprinkly Starry Stripy Sugary Swooshy Tangy Tingly Toffee Tumbly Turbo Twinkling Velvet
+    Waddly Whiskery Wispy Woolly Yummy Zappy Zigzag Zoomy Bumbly Buttery Clumsy Crispy Dotty Drowsy Fizzing Flashy
+    Floppy Frothy Gloopy Hiccupy Honeyed Itsy Jellied Kindly Lemony Mossy Nutty Paddly Pickled Quacky Rascally
+    Sassy Scruffy Slurpy Smudgy Spicy Squeaky Stompy Tinkly Twiddly Wiggly Zooming Blinky Boppy Chunky Dandy
+  `);
+
+  // Creatures, also chosen to avoid real surnames (no Fox, Wolf, Crane, Swan, Bird...).
+  const CREATURES = split(`
+    Unicorn Narwhal Platypus Axolotl Wombat Quokka Capybara Pangolin Llama Alpaca Penguin Otter Koala Panda Hedgehog
+    Walrus Flamingo Toucan Puffin Dragon Kiwi Lemur Meerkat Ocelot Okapi Manatee Dolphin Seahorse Starfish Octopus
+    Jellyfish Chinchilla Hamster Gerbil Ferret Raccoon Squirrel Chipmunk Beaver Moose Bison Yak Giraffe Zebra Hippo
+    Rhino Cheetah Jaguar Leopard Panther Tiger Lion Lynx Bobcat Cougar Gazelle Antelope Kangaroo Wallaby Sloth
+    Armadillo Anteater Tapir Iguana Gecko Chameleon Tortoise Turtle Frog Toad Newt Salamander Butterfly Dragonfly
+    Ladybug Firefly Bumblebee Cricket Grasshopper Beetle Hummingbird Pelican Peacock Parrot Macaw Cockatoo Owl
+    Ostrich Emu Dodo Yeti Griffon Pegasus Kraken Sphinx Gnome Pixie Sprite Goblin Troll Mermaid Hippogriff
+    Basilisk Chimera Cyclops Centaur Minotaur Dinosaur Raptor Mammoth Trilobite Tardigrade Nautilus Jackalope
+    Muffin Waffle Pancake Cupcake Dumpling Pretzel Noodle Biscuit Cookie Taco Burrito Nacho Pickle Meatball Donut
+  `);
+
+  global.FNames = {
+    FIRST_NAMES: new Set(FIRST_NAMES.map((n) => n.toLowerCase())),
+    COMMON_WORD_NAMES,
+    NOT_NAMES,
+    HONORIFICS,
+    // Drop adjectives that show up in ordinary student writing often enough to confuse "put names back".
+    ADJECTIVES: [...new Set(ADJECTIVES)].filter((w) => !new Set(split(`
+      Happy Lucky Kindly Glowing Shiny Sleepy Silly Spicy Fancy Hearty Clumsy Crispy Rainbow Sparkling Velvet Polka
+      Popping Humming Rustling Purring Bubbling Zooming Twinkling Fizzing Merry Cozy Dreamy Misty Snowy Sugary Yummy
+    `)).has(w)),
+    CREATURES: [...new Set(CREATURES)],
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+  <script>
+/*
+ * Core logic: find names, invent code names, build find-and-replace rules, and read/write the key.
+ * Pure JavaScript, no network.
+ */
+(function (global) {
+  'use strict';
+
+  const { FIRST_NAMES, COMMON_WORD_NAMES, NOT_NAMES, HONORIFICS, ADJECTIVES, CREATURES } = global.FNames;
+
+  // ---------- text helpers ----------
+
+  const APOS = /[‘’ʼ`´]/g;
+  const DASH = /[‐‑‒–]/g;
+  const SPACE = /[\s   ]+/g;
+
+  function norm(s) {
+    return String(s).normalize('NFC').replace(APOS, "'").replace(DASH, '-').replace(SPACE, ' ').trim().toLowerCase();
+  }
+
+  function tidy(s) {
+    return String(s).normalize('NFC').replace(APOS, "'").replace(SPACE, ' ').trim();
+  }
+
+  const isUpper = (s) => s === s.toUpperCase() && s !== s.toLowerCase();
+  const isCap = (s) => /^\p{Lu}/u.test(s);
+
+  function randInt(n) {
+    const a = new Uint32Array(1);
+    (global.crypto || globalThis.crypto).getRandomValues(a);
+    return a[0] % n;
+  }
+  const pick = (arr) => arr[randInt(arr.length)];
+
+  function escapeRe(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // Turn a literal like "O'Brien  Mary-Kate" into a pattern tolerant of curly quotes,
+  // non-breaking spaces, and different hyphens (all common in Word documents).
+  function flexPattern(literal) {
+    return tidy(literal)
+      .split('')
+      .map((ch) => {
+        if (ch === ' ') return '[\\s\\u00A0\\u2007\\u202F]+';
+        if (ch === "'") return "['\\u2018\\u2019\\u02BC]";
+        if (ch === '-') return '[-\\u2010\\u2011\\u2012\\u2013]';
+        return escapeRe(ch);
+      })
+      .join('');
+  }
+
+  // ---------- Matcher: one compiled regex for many find-and-replace rules ----------
+
+  /**
+   * rules: [{ find, replace, careful, meta }]
+   *  - careful: only match when Capitalized or ALL CAPS (for names that are also normal words)
+   */
+  class Matcher {
+    constructor(rules) {
+      this.lookup = new Map();
+      for (const r of rules) {
+        if (!r.find || !tidy(r.find)) continue;
+        const k = norm(r.find);
+        if (!this.lookup.has(k)) this.lookup.set(k, r);
+      }
+      const finds = [...this.lookup.values()].map((r) => r.find).sort((a, b) => b.length - a.length);
+      this.re = finds.length
+        ? new RegExp('(?<![\\p{L}\\p{M}\\p{N}_@])(?<![\\p{L}\\p{N}]\\.)(?:' + finds.map(flexPattern).join('|') + ')(?![\\p{L}\\p{M}\\p{N}_]|@|\\.[\\p{L}\\p{N}])', 'giu')
+        : null;
+    }
+
+    get size() { return this.lookup.size; }
+
+    /** Returns non-overlapping edits [{start, end, text, rule}] in order. */
+    findEdits(str) {
+      const out = [];
+      if (!this.re || !str) return out;
+      const re = this.re;
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(str))) {
+        const hit = m[0];
+        const rule = this.lookup.get(norm(hit));
+        if (!rule || (rule.careful && !isCap(hit))) {
+          re.lastIndex = m.index + 1;
+          continue;
+        }
+        let text = rule.replace;
+        if (hit.length > 1 && isUpper(hit) && /\p{L}{2}/u.test(hit)) text = text.toUpperCase();
+        out.push({ start: m.index, end: m.index + hit.length, text, rule });
+      }
+      return out;
+    }
+
+    replace(str) {
+      const edits = this.findEdits(str);
+      if (!edits.length) return { text: str, edits };
+      let res = '', last = 0;
+      for (const e of edits) {
+        res += str.slice(last, e.start) + e.text;
+        last = e.end;
+      }
+      return { text: res + str.slice(last), edits };
+    }
+  }
+
+  // ---------- parsing a name ----------
+
+  const SUFFIXES = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v']);
+  const PARTICLES = new Set(['de', 'del', 'della', 'der', 'la', 'le', 'van', 'von', 'da', 'di', 'du', 'dos', 'das', 'bin', 'ibn', 'al', 'el', 'st.', 'st', 'ten', 'ter']);
+  const NAME_CHARS = /^[\p{L}\p{M}][\p{L}\p{M}'.\- ]*$/u;
+
+  function cleanToken(t) {
+    return t.replace(/^[^\p{L}\p{M}]+|[^\p{L}\p{M}.]+$/gu, '').replace(/\.$/, (d) => d);
+  }
+
+  /** "Johnson, Emma R." | "Emma Rose Johnson" | "Elizabeth (Liz) Smith" | "Maria de la Cruz" */
+  function parseName(raw) {
+    let s = tidy(raw);
+    if (!s) return null;
+    let nick = null;
+    s = s.replace(/\(([^)]+)\)|"([^"]+)"|“([^”]+)”/g, (_, a, b, c) => {
+      nick = tidy(a || b || c);
+      return ' ';
+    }).replace(/\s+/g, ' ').trim();
+
+    let first, last = null, middles = [];
+    if (s.includes(',')) {
+      const [l, ...rest] = s.split(',');
+      const restTokens = rest.join(' ').split(' ').map(cleanToken).filter(Boolean).filter((t) => !SUFFIXES.has(t.toLowerCase()));
+      last = cleanToken(l.trim());
+      if (!restTokens.length) { first = last; last = null; }
+      else { first = restTokens[0]; middles = restTokens.slice(1); }
+    } else {
+      const parts = s.split(/\t| {2,}/).map((p) => p.trim()).filter(Boolean);
+      let tokens;
+      if (parts.length === 2 && !parts[0].includes(' ') && !parts[1].includes(' ')) {
+        // pasted from two spreadsheet columns: guess which one is the first name
+        const a = FIRST_NAMES.has(parts[0].toLowerCase()), b = FIRST_NAMES.has(parts[1].toLowerCase());
+        tokens = b && !a ? [parts[1], parts[0]] : parts;
+      } else tokens = s.split(' ');
+      tokens = tokens.map(cleanToken).filter(Boolean).filter((t) => !SUFFIXES.has(t.toLowerCase()));
+      if (!tokens.length) return null;
+      first = tokens[0];
+      if (tokens.length > 1) {
+        // gather surname particles: "Maria de la Cruz"
+        let li = tokens.length - 1;
+        while (li - 1 > 0 && PARTICLES.has(tokens[li - 1].toLowerCase())) li--;
+        last = tokens.slice(li).join(' ');
+        middles = tokens.slice(1, li);
+      }
+    }
+    if (!first || !NAME_CHARS.test(first)) return null;
+    if (last && !NAME_CHARS.test(last)) return null;
+    first = first.replace(/\.$/, '');
+    if (nick && !NAME_CHARS.test(nick)) nick = null;
+    return { first, last, middles, nick };
+  }
+
+  function looksLikeName(v) {
+    const s = tidy(v);
+    if (s.length < 2 || s.length > 60) return false;
+    if (!/^[\p{L}\p{M}][\p{L}\p{M}'.\-\s,()"“”]*$/u.test(s)) return false;
+    const words = s.split(/[\s,]+/).filter(Boolean);
+    if (words.length > 5) return false;
+    if (words.every((w) => NOT_NAMES.has(w.toLowerCase().replace(/\.$/, '')))) return false;
+    return true;
+  }
+
+  // ---------- detection ----------
+
+  let personSeq = 0;
+
+  class Detection {
+    constructor() {
+      this.people = new Map(); // key -> person
+      this.contacts = new Map(); // norm value -> contact
+    }
+
+    key(p) { return norm(p.first || '') + '|' + norm(p.last || '') + '|' + (p.title ? 'adult' : ''); }
+
+    addPerson(parsed, source, confidence, extra) {
+      if (!parsed) return null;
+      const p = { first: parsed.first || null, last: parsed.last || null, middles: parsed.middles || [], nick: parsed.nick || null, ...extra };
+      if (p.first && NOT_NAMES.has(p.first.toLowerCase()) && !p.last) return null;
+      const k = this.key(p);
+      let cur = this.people.get(k);
+      if (!cur) {
+        cur = { id: 'p' + ++personSeq, first: p.first, last: p.last, middles: [], nick: null, title: p.title || null, sources: new Set(), confidence, count: 0, contexts: [] };
+        this.people.set(k, cur);
+      }
+      for (const m of p.middles) if (!cur.middles.some((x) => norm(x) === norm(m))) cur.middles.push(m);
+      if (p.nick && !cur.nick) cur.nick = p.nick;
+      cur.sources.add(source);
+      const rank = { high: 3, check: 2, maybe: 1 };
+      if (rank[confidence] > rank[cur.confidence]) cur.confidence = confidence;
+      return cur;
+    }
+
+    addContact(kind, value, ctx) {
+      const k = norm(value);
+      let c = this.contacts.get(k);
+      if (!c) {
+        c = { id: 'c' + ++personSeq, kind, value: tidy(value), count: 0, contexts: [] };
+        this.contacts.set(k, c);
+      }
+      c.count++;
+      if (ctx && c.contexts.length < 2) c.contexts.push(ctx);
+    }
+  }
+
+  const MONTHS = new Set(['may', 'june', 'april', 'august']);
+  const MONTH_PREP = new Set(['in', 'on', 'of', 'since', 'until', 'by', 'during', 'next', 'last', 'this', 'early', 'late', 'mid', 'every', 'through', 'before', 'after', 'from', 'to']);
+  const HONOR_RE = new RegExp('^(?:' + HONORIFICS.join('|') + ')$', 'i');
+  const WORD_RE = /[\p{L}\p{M}]+(?:['’\-][\p{L}\p{M}]+)*/gu;
+
+  const EMAIL_RE = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g;
+  const PHONE_RE = /(?<![\d\w])(?:\+?1[\s.\-]?)?(?:\(\d{3}\)\s?|\d{3}[\s.\-])\d{3}[\s.\-]\d{4}(?![\d\w])/g;
+  const SSN_RE = /(?<![\d\w\-])\d{3}-\d{2}-\d{4}(?![\d\w\-])/g;
+  const ID_RE = /(?<![\d\w\-\/.,])(?:[A-Z]{1,3}-?)?\d{6,10}(?![\d\w\-\/]|[.,]\d)/g;
+
+  function isFirstNameWord(w) {
+    const l = w.toLowerCase();
+    if (FIRST_NAMES.has(l)) return true;
+    if (l.includes('-')) return l.split('-').some((x) => FIRST_NAMES.has(x)); // "Mary-Kate", "Emma-Lee"
+    return false;
+  }
+
+  function contextAround(text, start, end) {
+    const a = Math.max(0, start - 45), b = Math.min(text.length, end + 45);
+    return { before: (a > 0 ? '…' : '') + text.slice(a, start), hit: text.slice(start, end), after: text.slice(end, b) + (b < text.length ? '…' : '') };
+  }
+
+  /** Scan an ordinary sentence/paragraph for likely names. */
+  function scanProse(text, det, knownLasts) {
+    const tokens = [];
+    let m;
+    WORD_RE.lastIndex = 0;
+    while ((m = WORD_RE.exec(text))) tokens.push({ w: m[0], s: m.index, e: m.index + m[0].length });
+    const base = (t) => t.w.replace(/['’]s$/i, '');
+    const gap = (i) => text.slice(tokens[i - 1] ? tokens[i - 1].e : 0, tokens[i].s);
+    const plainGap = (i) => /^[  ]+$/.test(gap(i));
+    const isSentenceStart = (i) => i === 0 || /[.!?:;•\n"“(•\-–—]\s*$/.test(gap(i)) || /^\s*$/.test(text.slice(0, tokens[i].s));
+    const surnameOk = (t) => t && isCap(t.w) && !NOT_NAMES.has(base(t).toLowerCase()) && (!FIRST_NAMES.has(base(t).toLowerCase()) || COMMON_WORD_NAMES.has(base(t).toLowerCase()) || knownLasts.has(norm(base(t))));
+
+    const used = new Set();
+    for (let i = 0; i < tokens.length; i++) {
+      if (used.has(i)) continue;
+      const t = tokens[i];
+      const b = base(t);
+
+      // Mr. / Mrs. / Ms. / Dr. + Name
+      if (HONOR_RE.test(t.w) && tokens[i + 1] && /^\.?\s+$/.test(gap(i + 1)) && isCap(tokens[i + 1].w)) {
+        const n1 = tokens[i + 1], n2 = tokens[i + 2];
+        let parsed;
+        if (n2 && plainGap(i + 2) && isFirstNameWord(base(n1)) && surnameOk(n2)) { parsed = { first: base(n1), last: base(n2) }; used.add(i + 2); }
+        else if (!NOT_NAMES.has(base(n1).toLowerCase())) parsed = { first: null, last: base(n1) };
+        if (parsed) {
+          det.addPerson(parsed, 'text', 'high', parsed.first ? {} : { title: t.w.replace(/\.$/, '') });
+          used.add(i + 1);
+          continue;
+        }
+      }
+
+      if (!isCap(t.w) || !isFirstNameWord(b)) {
+        // "Xochitl Johnson": an unknown capitalized word right before a last name we already know
+        const n = tokens[i + 1];
+        if (isCap(t.w) && n && plainGap(i + 1) && knownLasts.has(norm(base(n))) && !NOT_NAMES.has(b.toLowerCase()) && !isSentenceStart(i) && b.length > 1) {
+          det.addPerson({ first: b, last: base(n) }, 'text', 'check');
+          used.add(i + 1);
+        }
+        continue;
+      }
+
+      const l = b.toLowerCase();
+      const careful = COMMON_WORD_NAMES.has(l);
+      const prev = tokens[i - 1] ? tokens[i - 1].w.toLowerCase() : '';
+      const nextChar = text.slice(t.e).match(/^\s*(\S)/);
+      if (MONTHS.has(l) && (MONTH_PREP.has(prev) || (nextChar && /\d/.test(nextChar[1])))) continue;
+
+      // Look for a last name: "Emma Johnson", "Emma R. Johnson", "Maria de la Cruz"
+      let j = i + 1, last = null, middles = [];
+      if (tokens[j] && /^[  ]+$/.test(gap(j)) && /^\p{Lu}$/u.test(tokens[j].w) && /^\.\s/.test(text.slice(tokens[j].e, tokens[j].e + 2))) {
+        middles.push(tokens[j].w + '.');
+        j++;
+      }
+      let k = j;
+      const parts = [];
+      while (tokens[k] && plainGap(k) && PARTICLES.has(tokens[k].w.toLowerCase()) && tokens[k + 1] && plainGap(k + 1)) { parts.push(tokens[k].w); k++; }
+      if (parts.length && !(tokens[k] && isCap(tokens[k].w))) { k = j; parts.length = 0; }
+      if (tokens[k] && (k === j ? plainGap(k) || /^\.\s+$/.test(gap(k)) && middles.length : plainGap(k)) && (parts.length ? isCap(tokens[k].w) : surnameOk(tokens[k]))) {
+        last = [...parts, base(tokens[k])].join(' ');
+        for (let x = i + 1; x <= k; x++) used.add(x);
+      }
+
+      if (last) {
+        det.addPerson({ first: b, last, middles }, 'text', 'high');
+      } else if (careful) {
+        det.addPerson({ first: b, last: null }, 'text', isSentenceStart(i) ? 'maybe' : 'check');
+      } else {
+        det.addPerson({ first: b, last: null }, 'text', 'high');
+      }
+    }
+
+    // Whole paragraph is "Johnson, Emma" — classic gradebook/roster format.
+    const lf = tidy(text).match(/^([\p{Lu}][\p{L}\p{M}'\-]+(?: [\p{Lu}][\p{L}\p{M}'\-]+)?),\s*([\p{Lu}][\p{L}\p{M}'\-]+)(?:\s+[\p{Lu}]\.?)?$/u);
+    if (lf && isFirstNameWord(lf[2]) && !NOT_NAMES.has(lf[1].toLowerCase())) det.addPerson(parseName(lf[0]), 'text', 'high');
+  }
+
+  const HDR_FIRST = /\b(first|given|preferred|nick)\s*name\b|^\s*(first|given|preferred)\s*$/i;
+  const HDR_LAST = /\b(last|family|sur)\s*name\b|^\s*(surname|last)\s*$/i;
+  const HDR_FULL = /\b(student|name|learner|pupil|child|parent|guardian|mother|father|contact|emergency)\b/i;
+  const HDR_NOT = /\b(teacher|instructor|staff|course|class|school|assignment|file|user\s*name|username|login|e-?mail|id|number|#|grade|period|section|district|book|title|team|group|sheet|tab|date|score)\b/i;
+
+  /** Spreadsheet/table: use column headers like "Student Name", "First Name", "Last Name". */
+  function scanTable(rows, det) {
+    for (let h = 0; h < Math.min(rows.length, 5); h++) {
+      const hdr = rows[h] || [];
+      let fC = -1, lC = -1;
+      const fullCols = [];
+      hdr.forEach((cell, c) => {
+        const v = tidy(cell || '');
+        if (!v || v.length > 40) return;
+        if (HDR_FIRST.test(v)) fC = c;
+        else if (HDR_LAST.test(v)) lC = c;
+        else if (HDR_FULL.test(v) && !HDR_NOT.test(v)) fullCols.push(c);
+      });
+      if (fC < 0 && lC < 0 && !fullCols.length) continue;
+      for (let r = h + 1; r < rows.length; r++) {
+        const row = rows[r] || [];
+        if (fC >= 0 || lC >= 0) {
+          const f = fC >= 0 ? tidy(row[fC] || '') : '', l = lC >= 0 ? tidy(row[lC] || '') : '';
+          if ((f && looksLikeName(f)) || (l && looksLikeName(l))) {
+            const pf = f ? parseName(f) : null;
+            det.addPerson({ first: pf ? pf.first : null, last: l || null, middles: pf ? pf.middles : [], nick: pf && pf.nick }, 'column', 'high');
+          }
+        }
+        for (const c of fullCols) {
+          const v = row[c];
+          if (v && looksLikeName(v)) det.addPerson(parseName(v), 'column', 'high');
+        }
+      }
+      return;
+    }
+  }
+
+  function scanContacts(text, det, opts) {
+    const seen = [];
+    const take = (re, kind) => {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(text))) {
+        const s = m.index, e = s + m[0].length;
+        if (seen.some(([a, b]) => s < b && e > a)) continue;
+        seen.push([s, e]);
+        det.addContact(kind, m[0], contextAround(text, s, e));
+      }
+    };
+    if (opts.emails) take(EMAIL_RE, 'Email');
+    if (opts.phones) take(PHONE_RE, 'Phone');
+    if (opts.ids) { take(SSN_RE, 'ID'); take(ID_RE, 'ID'); }
+  }
+
+  /**
+   * corpus: { paragraphs: string[], tables: string[][][] }
+   * roster: string (one name per line)
+   * keyBook: AliasBook loaded from an earlier key (its people count as a roster)
+   */
+  function detect(corpus, roster, keyBook, opts) {
+    const det = new Detection();
+    for (const line of (roster || '').split(/\r?\n/)) {
+      if (!tidy(line) || /^(name|student|students|first|last)\b.*$/i.test(tidy(line)) && !line.includes(',')) continue;
+      det.addPerson(parseName(line), 'roster', 'high');
+    }
+    if (keyBook) {
+      for (const p of keyBook.people) {
+        const hm = p.match(new RegExp('^(' + HONORIFICS.join('|') + ')\\.?\\s+(.+)$', 'i'));
+        if (hm) det.addPerson({ first: null, last: hm[2] }, 'key', 'high', { title: hm[1] });
+        else det.addPerson(parseName(p), 'key', 'high');
+      }
+    }
+    for (const rows of corpus.tables) scanTable(rows, det);
+
+    const knownLasts = new Set([...det.people.values()].filter((p) => p.last).map((p) => norm(p.last)));
+    for (const para of corpus.paragraphs) scanProse(para, det, knownLasts);
+    // second pass picks up "Xochitl Johnson" once Johnson is known from anywhere
+    const knownLasts2 = new Set([...det.people.values()].filter((p) => p.last).map((p) => norm(p.last)));
+    if (knownLasts2.size > knownLasts.size) for (const para of corpus.paragraphs) scanProse(para, det, knownLasts2);
+
+    for (const para of corpus.paragraphs) scanContacts(para, det, opts);
+
+    // Fold "Emma" into "Emma Johnson" when Emma is only one known person.
+    const people = [...det.people.values()];
+    const fulls = people.filter((p) => p.first && p.last && !p.title);
+    const result = [];
+    for (const p of people) {
+      if (p.first && !p.last) {
+        const owners = fulls.filter((f) => norm(f.first) === norm(p.first) || (f.nick && norm(f.nick) === norm(p.first)));
+        if (owners.length) {
+          for (const o of owners) for (const s of p.sources) o.sources.add(s);
+          continue;
+        }
+      }
+      result.push(p);
+    }
+
+    // Count mentions and grab a little context for the review screen.
+    const counter = new Matcher(result.flatMap((p) => personForms(p).map((f) => ({ ...f, replace: '', meta: p }))));
+    const byFind = new Map();
+    for (const p of result) for (const f of personForms(p)) {
+      const k = norm(f.find);
+      if (!byFind.has(k)) byFind.set(k, []);
+      byFind.get(k).push(p);
+    }
+    for (const para of corpus.paragraphs) {
+      for (const e of counter.findEdits(para)) {
+        for (const p of byFind.get(norm(para.slice(e.start, e.end))) || [e.rule.meta]) {
+          p.count++;
+          if (p.contexts.length < 2) p.contexts.push(contextAround(para, e.start, e.end));
+        }
+      }
+    }
+    const order = { high: 0, check: 1, maybe: 2 };
+    result.sort((a, b) => order[a.confidence] - order[b.confidence] || displayName(a).localeCompare(displayName(b)));
+    return { people: result, contacts: [...det.contacts.values()] };
+  }
+
+  function displayName(p) {
+    if (p.title && !p.first) return p.title + '. ' + p.last;
+    return [p.first, p.nick ? '(' + p.nick + ')' : null, ...(p.middles || []), p.last].filter(Boolean).join(' ');
+  }
+
+  /** Every way a person might be written, with the token pieces each form contains. */
+  function personForms(p) {
+    const F = p.first, L = p.last, forms = [];
+    const add = (find, kind, careful) => find && forms.push({ find, kind, careful: !!careful });
+    const firsts = [F, p.nick].filter(Boolean);
+    if (L) {
+      for (const f of firsts) {
+        add(f + ' ' + L, 'full');
+        add(L + ', ' + f, 'lastfirst');
+        add(L + ' ' + f, 'lastfirst-nocomma-skip');
+        if (p.middles.length) {
+          add(f + ' ' + p.middles.join(' ') + ' ' + L, 'full');
+          add(L + ', ' + f + ' ' + p.middles.join(' '), 'lastfirst');
+          const initials = p.middles.map((m) => m[0] + '.').join(' ');
+          add(f + ' ' + initials + ' ' + L, 'full');
+          add(L + ', ' + f + ' ' + initials, 'lastfirst');
+          add(f + ' ' + initials.replace(/\./g, '') + ' ' + L, 'full');
+        }
+      }
+      add(L, 'last', true);
+    }
+    for (const f of firsts) add(f, 'first', COMMON_WORD_NAMES.has(f.toLowerCase()));
+    return forms.filter((f) => f.kind !== 'lastfirst-nocomma-skip');
+  }
+
+  // ---------- code names ----------
+
+  class AliasBook {
+    constructor() {
+      this.firsts = new Map(); // norm real first -> { real, alias }
+      this.lasts = new Map(); // norm real last -> { real, alias }
+      this.contacts = new Map(); // norm value -> { kind, real, alias }
+      this.people = []; // real full names from an imported key (used as a roster)
+      this.avoid = new Set();
+      this.counters = { Email: 0, Phone: 0, ID: 0 };
+    }
+
+    usedAliases() {
+      return new Set([...this.firsts.values(), ...this.lasts.values()].map((v) => norm(v.alias)));
+    }
+
+    firstAlias(real) {
+      const k = norm(real);
+      if (this.firsts.has(k)) return this.firsts.get(k).alias;
+      const used = new Set([...this.firsts.values()].map((v) => v.alias));
+      const pool = ADJECTIVES.filter((a) => !used.has(a) && !this.avoid.has(a.toLowerCase()) && !FIRST_NAMES.has(a.toLowerCase()));
+      let alias = pool.length ? pick(pool) : null;
+      while (!alias || used.has(alias)) alias = pick(ADJECTIVES) + pick(ADJECTIVES).toLowerCase();
+      this.firsts.set(k, { real: tidy(real), alias });
+      return alias;
+    }
+
+    lastAlias(real) {
+      const k = norm(real);
+      if (this.lasts.has(k)) return this.lasts.get(k).alias;
+      const used = new Set([...this.lasts.values()].map((v) => v.alias));
+      const pool = CREATURES.filter((c) => !this.avoid.has(c.toLowerCase()));
+      let alias;
+      do alias = pick(pool) + ' ' + (10 + randInt(90)); while (used.has(alias));
+      this.lasts.set(k, { real: tidy(real), alias });
+      return alias;
+    }
+
+    reroll(p) {
+      for (const f of [p.first, p.nick].filter(Boolean)) this.firsts.delete(norm(f));
+      if (p.last) this.lasts.delete(norm(p.last));
+      return this.aliasFor(p);
+    }
+
+    aliasFor(p) {
+      const parts = [];
+      if (p.first) {
+        const a = this.firstAlias(p.first);
+        if (p.nick && !this.firsts.has(norm(p.nick))) this.firsts.set(norm(p.nick), { real: p.nick, alias: a });
+        parts.push(a);
+      } else if (p.title) parts.push(p.title + '.');
+      if (p.last) parts.push(this.lastAlias(p.last));
+      return parts.join(' ');
+    }
+
+    contactAlias(c, people) {
+      const k = norm(c.value);
+      if (this.contacts.has(k)) return this.contacts.get(k).alias;
+      let alias;
+      if (c.kind === 'Email') {
+        const local = norm(c.value.split('@')[0]);
+        const owner = people.find((p) => (p.first && local.includes(norm(p.first))) || (p.last && local.includes(norm(p.last).replace(/\s/g, ''))));
+        alias = owner
+          ? this.aliasFor(owner).toLowerCase().replace(/\./g, '').replace(/\s+(\d+)$/, '$1').replace(/\s+/g, '.') + '@example.com'
+          : 'contact' + ++this.counters.Email + '@example.com';
+        while ([...this.contacts.values()].some((v) => v.alias === alias)) alias = alias.replace('@', ++this.counters.Email + '@');
+      } else if (c.kind === 'Phone') {
+        alias = '555-555-01' + String(++this.counters.Phone).padStart(2, '0');
+      } else {
+        alias = 'ID-' + String(++this.counters.ID).padStart(3, '0');
+      }
+      this.contacts.set(k, { kind: c.kind, real: c.value, alias });
+      return alias;
+    }
+
+    // ---- key file (CSV) ----
+
+    static fromKeyRows(rows) {
+      const b = new AliasBook();
+      for (const r of rows) {
+        const type = (r.type || '').toLowerCase();
+        if (!r.real || !r.code) continue;
+        if (type.startsWith('first')) b.firsts.set(norm(r.real), { real: r.real, alias: r.code });
+        else if (type.startsWith('last')) b.lasts.set(norm(r.real), { real: r.real, alias: r.code });
+        else if (type.startsWith('person') || type.startsWith('student')) b.people.push(r.real);
+        else if (['email', 'phone', 'id'].includes(type)) {
+          const kind = type === 'id' ? 'ID' : type[0].toUpperCase() + type.slice(1);
+          b.contacts.set(norm(r.real), { kind, real: r.real, alias: r.code });
+          const n = parseInt((r.code.match(/(\d+)(?=@|$)/) || [])[1], 10);
+          if (n > (b.counters[kind] || 0)) b.counters[kind] = n;
+        }
+      }
+      return b;
+    }
+  }
+
+  /** Build the forward (hide names) matcher and the key rows from the selections. */
+  function buildSanitizePlan(people, contacts, book) {
+    const rules = [];
+    const keyPeople = [];
+    for (const p of people) {
+      const full = book.aliasFor(p);
+      keyPeople.push({ type: 'Person', real: displayName(p), code: full });
+      for (const f of personForms(p)) {
+        let replace;
+        const fa = p.first ? book.firstAlias(p.first) : null;
+        const la = p.last ? book.lastAlias(p.last) : null;
+        if (f.kind === 'full') replace = fa + ' ' + la;
+        else if (f.kind === 'lastfirst') replace = la + ', ' + fa;
+        else if (f.kind === 'last') replace = la;
+        else replace = fa;
+        rules.push({ find: f.find, replace, careful: f.careful, kind: f.kind });
+      }
+    }
+    // Most specific first so "Emma Johnson" wins over "Emma".
+    const prio = { full: 0, lastfirst: 0, first: 1, last: 2 };
+    rules.sort((a, b) => prio[a.kind] - prio[b.kind]);
+    const keyContacts = [];
+    for (const c of contacts) {
+      const alias = book.contactAlias(c, people);
+      rules.unshift({ find: c.value, replace: alias, careful: false, kind: 'contact' });
+      keyContacts.push({ type: c.kind, real: c.value, code: alias });
+    }
+    const tokenRows = [];
+    const usedFirst = new Set(people.flatMap((p) => [p.first, p.nick].filter(Boolean).map(norm)));
+    const usedLast = new Set(people.filter((p) => p.last).map((p) => norm(p.last)));
+    for (const [k, v] of book.firsts) if (usedFirst.has(k)) tokenRows.push({ type: 'First name', real: v.real, code: v.alias });
+    for (const [k, v] of book.lasts) if (usedLast.has(k)) tokenRows.push({ type: 'Last name', real: v.real, code: v.alias });
+    return { matcher: new Matcher(rules), keyRows: [...keyPeople, ...tokenRows, ...keyContacts] };
+  }
+
+  /** Reverse matcher: code names -> real names, from key rows. */
+  function buildRestoreMatcher(rows) {
+    const rules = [];
+    const persons = rows.filter((r) => /^(person|student)/i.test(r.type));
+    for (const r of rows) {
+      if (!r.code || !r.real) continue;
+      const t = r.type.toLowerCase();
+      rules.push({ find: r.code, replace: r.real, careful: t.startsWith('first'), kind: t });
+      if (t.startsWith('last')) rules.push({ find: r.code.replace(/\s+(\d+)$/, '$1'), replace: r.real, kind: t }); // "Unicorn45"
+      if (t.startsWith('person')) {
+        // "Fluffy Unicorn" (AI dropped the number) — only if unambiguous
+        const short = r.code.replace(/\s+\d+$/, '');
+        if (short !== r.code && persons.filter((x) => x.code.replace(/\s+\d+$/, '') === short).length === 1) rules.push({ find: short, replace: r.real, kind: t });
+        const m = r.code.match(/^(\S+) (.+?) (\d+)$/);
+        if (m) rules.push({ find: m[1] + ' ' + m[2] + m[3], replace: r.real, kind: t });
+      }
+    }
+    return new Matcher(rules);
+  }
+
+  // ---------- CSV ----------
+
+  function csvEscape(v) {
+    const s = String(v == null ? '' : v);
+    return /[",\r\n]/.test(s) || /^[=+\-@]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], cell = '', q = false;
+    text = text.replace(/^﻿/, '');
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) {
+        if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (ch === '"') q = false;
+        else cell += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === ',' || ch === '\t') { row.push(cell); cell = ''; }
+      else if (ch === '\n' || ch === '\r') {
+        if (ch === '\r' && text[i + 1] === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += ch;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  const KEY_HEADER = ['Type', 'Real name or info', 'Code name'];
+
+  function keyToCSV(rows) {
+    const date = new Date().toLocaleString();
+    const lines = [
+      '# FERPA Sanitizer KEY - PRIVATE. Contains real student names. Do NOT upload this file to AI tools. Created ' + date,
+      KEY_HEADER.join(','),
+      ...rows.map((r) => [r.type, r.real, r.code].map(csvEscape).join(',')),
+    ];
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+
+  function parseKeyCSV(text) {
+    const rows = parseCSV(text).filter((r) => r.length >= 3 && !/^#/.test(r[0]) && !/^type$/i.test(r[0].trim()));
+    const out = rows.map((r) => ({ type: r[0].trim(), real: tidy(r[1]), code: tidy(r[2]) })).filter((r) => r.real && r.code);
+    if (!out.length) throw new Error("That doesn't look like a FERPA Sanitizer key file.");
+    return out;
+  }
+
+  global.FEngine = {
+    norm, tidy, Matcher, parseName, detect, displayName, personForms, AliasBook,
+    buildSanitizePlan, buildRestoreMatcher, keyToCSV, parseKeyCSV, parseCSV, contextAround,
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+  <script>
+/*
+ * Reading and rewriting files: Word (.docx), Excel (.xlsx), PowerPoint (.pptx), and plain text/CSV.
+ * Office files are ZIPs of XML. We edit the text inside the XML and keep everything else
+ * (formatting, images, formulas) exactly as it was.
+ */
+(function (global) {
+  'use strict';
+
+  const { ZipArchive } = global.FZip;
+  const { parseCSV } = global.FEngine;
+
+  const TYPES = {
+    docx: { kind: 'office', label: 'Word', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+    docm: { kind: 'office', label: 'Word', mime: 'application/vnd.ms-word.document.macroEnabled.12' },
+    dotx: { kind: 'office', label: 'Word', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.template' },
+    xlsx: { kind: 'office', label: 'Excel', mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+    xlsm: { kind: 'office', label: 'Excel', mime: 'application/vnd.ms-excel.sheet.macroEnabled.12' },
+    pptx: { kind: 'office', label: 'PowerPoint', mime: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' },
+    pptm: { kind: 'office', label: 'PowerPoint', mime: 'application/vnd.ms-powerpoint.presentation.macroEnabled.12' },
+    txt: { kind: 'text', label: 'Text', mime: 'text/plain' },
+    md: { kind: 'text', label: 'Text', mime: 'text/markdown' },
+    csv: { kind: 'csv', label: 'CSV', mime: 'text/csv' },
+    tsv: { kind: 'csv', label: 'CSV', mime: 'text/tab-separated-values' },
+  };
+
+  const OLD_FORMATS = {
+    doc: 'This is an older Word file. Open it in Word and choose File → Save As → Word Document (.docx), then add it again.',
+    xls: 'This is an older Excel file. Open it in Excel and choose File → Save As → Excel Workbook (.xlsx), then add it again.',
+    ppt: 'This is an older PowerPoint file. Open it in PowerPoint and choose File → Save As → PowerPoint Presentation (.pptx), then add it again.',
+    pdf: "PDFs can't be edited safely here. If you have the original Word/Google Doc, download it as .docx and add that instead.",
+    odt: 'Save this as a Word Document (.docx) first, then add it again.',
+    ods: 'Save this as an Excel Workbook (.xlsx) first, then add it again.',
+    odp: 'Save this as a PowerPoint Presentation (.pptx) first, then add it again.',
+    rtf: 'Open this in Word and Save As .docx (or .txt), then add it again.',
+    pages: 'In Pages, choose File → Export To → Word (.docx), then add that file.',
+    numbers: 'In Numbers, choose File → Export To → Excel (.xlsx), then add that file.',
+    key: 'In Keynote, choose File → Export To → PowerPoint (.pptx), then add that file.',
+    gdoc: 'In Google Docs, choose File → Download → Microsoft Word (.docx), then add that file.',
+    gsheet: 'In Google Sheets, choose File → Download → Microsoft Excel (.xlsx), then add that file.',
+    gslides: 'In Google Slides, choose File → Download → Microsoft PowerPoint (.pptx), then add that file.',
+  };
+
+  function extOf(name) {
+    const m = /\.([a-z0-9]+)$/i.exec(name);
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  // ---------- XML helpers ----------
+
+  const RICH = new Set(['t', 'delText', 'instrText']);
+  const ANCHORS = new Set(['p', 'si', 'is', 'rPh', 'text']);
+  const PLAIN_LEAVES = new Set(['f', 'definedName', 'text', 'lpstr', 'bstr']);
+  const ATTRS = new Set(['descr', 'title', 'tooltip', 'author']);
+  const XML_NS = 'http://www.w3.org/XML/1998/namespace';
+
+  function parseXml(str) {
+    const doc = new DOMParser().parseFromString(str, 'application/xml');
+    return doc.getElementsByTagName('parsererror').length ? null : doc;
+  }
+
+  function serialize(doc, original) {
+    let out = new XMLSerializer().serializeToString(doc);
+    const decl = /^\s*<\?xml[^>]*\?>/.exec(original);
+    if (decl && !/^\s*<\?xml/.test(out)) out = decl[0] + '\r\n' + out;
+    return out;
+  }
+
+  const isLeaf = (el) => el.childElementCount === 0;
+
+  /** Group text runs by their paragraph so names split across formatting runs are still found. */
+  function textGroups(doc) {
+    const groups = new Map();
+    const all = doc.getElementsByTagName('*');
+    for (let i = 0; i < all.length; i++) {
+      const el = all[i];
+      if (!RICH.has(el.localName) || !isLeaf(el)) continue;
+      let a = el.parentNode;
+      while (a && a.nodeType === 1 && !ANCHORS.has(a.localName)) a = a.parentNode;
+      const key = a && a.nodeType === 1 ? a : el;
+      const gk = el.localName === 'instrText' ? 'i' : 't';
+      let byKind = groups.get(key);
+      if (!byKind) groups.set(key, (byKind = {}));
+      (byKind[gk] = byKind[gk] || []).push(el);
+    }
+    const out = [];
+    for (const byKind of groups.values()) for (const k in byKind) out.push({ nodes: byKind[k], field: k === 'i' });
+    return out;
+  }
+
+  function plainTargets(doc, partName) {
+    const els = [], attrs = [];
+    const isProps = /^docProps\//.test(partName);
+    const isChart = /charts?\//.test(partName);
+    const isPivot = /pivotCache/.test(partName);
+    const isWorkbook = /workbook\.xml$/.test(partName);
+    const isSheet = /worksheets\/[^/]+\.xml$/.test(partName);
+    const all = doc.getElementsByTagName('*');
+    for (let i = 0; i < all.length; i++) {
+      const el = all[i];
+      const ln = el.localName;
+      if (isLeaf(el) && el.textContent) {
+        if (isProps && el !== doc.documentElement) els.push(el);
+        else if (PLAIN_LEAVES.has(ln) && !RICH.has(ln)) els.push(el);
+        else if (ln === 'v' && (isChart || (isSheet && el.parentNode && el.parentNode.getAttribute('t') === 'str'))) els.push(el);
+      }
+      for (let j = 0; j < el.attributes.length; j++) {
+        const at = el.attributes[j];
+        const an = at.localName;
+        if (ATTRS.has(an) || (isWorkbook && ln === 'sheet' && an === 'name') || (isPivot && ln === 's' && an === 'v')) attrs.push(at);
+      }
+    }
+    return { els, attrs };
+  }
+
+  const isXmlPart = (name) => /\.(xml|rels)$/i.test(name) && name !== '[Content_Types].xml' && !/(^|\/)(theme\d*|fontTable|webSettings|styles|stylesWithEffects|numbering)\.xml$/i.test(name);
+
+  // ---------- opening & reading ----------
+
+  async function openFile(file) {
+    const ext = extOf(file.name);
+    if (OLD_FORMATS[ext]) throw new Error(OLD_FORMATS[ext]);
+    const type = TYPES[ext];
+    if (!type) throw new Error('This kind of file isn’t supported yet. Try Word (.docx), Excel (.xlsx), PowerPoint (.pptx), or a text/CSV file.');
+    const doc = { name: file.name, ext, type, size: file.size };
+    if (type.kind === 'office') {
+      doc.zip = await ZipArchive.read(await file.arrayBuffer());
+      doc.media = doc.zip.names().filter((n) => /\/media\//.test(n) && /\.(png|jpe?g|gif|bmp|tiff?|emf|wmf|svg|webp)$/i.test(n)).length;
+      if (!doc.zip.names().some((n) => /^(word|xl|ppt)\//.test(n))) throw new Error('This file looks damaged or isn’t a real Office document.');
+    } else {
+      doc.text = await file.text();
+      doc.media = 0;
+    }
+    doc.corpus = await extract(doc);
+    return doc;
+  }
+
+  async function extract(doc) {
+    const paragraphs = [], tables = [];
+    if (doc.type.kind === 'text') {
+      paragraphs.push(...doc.text.split(/\r?\n/).filter((l) => l.trim()));
+      return { paragraphs, tables };
+    }
+    if (doc.type.kind === 'csv') {
+      const rows = parseCSV(doc.text);
+      tables.push(rows);
+      for (const r of rows) for (const c of r) if (c && c.trim()) paragraphs.push(c);
+      return { paragraphs, tables };
+    }
+    const zip = doc.zip;
+    let shared = [];
+    const ss = zip.get('xl/sharedStrings.xml');
+    if (ss) {
+      const x = parseXml(await ss.text());
+      if (x) shared = [...x.getElementsByTagName('*')].filter((e) => e.localName === 'si').map((si) => [...si.getElementsByTagName('*')].filter((e) => e.localName === 't' && e.parentNode.localName !== 'rPh').map((e) => e.textContent).join(''));
+    }
+    for (const name of zip.names()) {
+      if (!isXmlPart(name)) continue;
+      const x = parseXml(await zip.get(name).text());
+      if (!x) continue;
+      for (const g of textGroups(x)) {
+        if (g.field) continue;
+        const s = g.nodes.map((n) => n.textContent).join('');
+        if (s.trim()) paragraphs.push(s);
+      }
+      const { els, attrs } = plainTargets(x, name);
+      for (const el of els) if (el.localName !== 'f' && el.textContent.trim()) paragraphs.push(el.textContent);
+      for (const at of attrs) if (at.value.trim() && !/^\d+$/.test(at.value)) paragraphs.push(at.value);
+
+      // Tables in Word/PowerPoint
+      for (const tbl of [...x.getElementsByTagName('*')].filter((e) => e.localName === 'tbl')) {
+        const rows = [...tbl.children].filter((e) => e.localName === 'tr').map((tr) =>
+          [...tr.children].filter((e) => e.localName === 'tc').map((tc) =>
+            [...tc.getElementsByTagName('*')].filter((e) => e.localName === 'p').map((p) =>
+              [...p.getElementsByTagName('*')].filter((e) => e.localName === 't').map((t) => t.textContent).join('')).join(' ')));
+        if (rows.length) tables.push(rows);
+      }
+      // Excel sheets
+      if (/^xl\/worksheets\/[^/]+\.xml$/.test(name)) {
+        const grid = [];
+        for (const c of [...x.getElementsByTagName('*')].filter((e) => e.localName === 'c')) {
+          const ref = c.getAttribute('r') || '';
+          const m = /^([A-Z]+)(\d+)$/.exec(ref);
+          if (!m) continue;
+          const col = m[1].split('').reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+          const row = parseInt(m[2], 10) - 1;
+          if (row > 20000 || col > 200) continue;
+          const t = c.getAttribute('t');
+          const kids = [...c.children];
+          const v = kids.find((e) => e.localName === 'v');
+          let val = '';
+          if (t === 's' && v) val = shared[parseInt(v.textContent, 10)] || '';
+          else if (t === 'inlineStr') val = [...c.getElementsByTagName('*')].filter((e) => e.localName === 't').map((e) => e.textContent).join('');
+          else if (v && t !== 'b' && t !== 'e') {
+            val = v.textContent;
+            if ((!t || t === 'n') && /^\d{6,10}$/.test(val) && !kids.some((e) => e.localName === 'f')) paragraphs.push(val);
+          }
+          (grid[row] = grid[row] || [])[col] = val;
+        }
+        if (grid.length) tables.push(Array.from(grid, (r) => (r ? Array.from(r, (v) => v || '') : [])));
+      }
+    }
+    return { paragraphs, tables };
+  }
+
+  // ---------- rewriting ----------
+
+  function applyToGroup(nodes, matcher) {
+    const texts = nodes.map((n) => n.textContent);
+    const full = texts.join('');
+    const edits = matcher.findEdits(full);
+    if (!edits.length) return 0;
+    const starts = [];
+    let acc = 0;
+    for (const t of texts) { starts.push(acc); acc += t.length; }
+    const nodeAt = (pos) => {
+      let i = starts.length - 1;
+      while (i > 0 && starts[i] > pos) i--;
+      return i;
+    };
+    for (let k = edits.length - 1; k >= 0; k--) {
+      const { start, end, text } = edits[k];
+      const a = nodeAt(start), b = nodeAt(end - 1);
+      if (a === b) texts[a] = texts[a].slice(0, start - starts[a]) + text + texts[a].slice(end - starts[a]);
+      else {
+        texts[a] = texts[a].slice(0, start - starts[a]) + text;
+        for (let i = a + 1; i < b; i++) texts[i] = '';
+        texts[b] = texts[b].slice(end - starts[b]);
+      }
+    }
+    nodes.forEach((n, i) => {
+      if (n.textContent === texts[i]) return;
+      n.textContent = texts[i];
+      if (n.namespaceURI && /wordprocessingml/.test(n.namespaceURI) && /^\s|\s$/.test(texts[i])) n.setAttributeNS(XML_NS, 'xml:space', 'preserve');
+    });
+    return edits.length;
+  }
+
+  /** Excel: student ID numbers stored as numbers become text cells holding the code. */
+  function convertNumericCells(x, matcher) {
+    let n = 0;
+    for (const c of [...x.getElementsByTagName('*')].filter((e) => e.localName === 'c')) {
+      const t = c.getAttribute('t');
+      if (t && t !== 'n') continue;
+      const kids = [...c.children];
+      const v = kids.find((e) => e.localName === 'v');
+      if (!v || kids.some((e) => e.localName === 'f')) continue;
+      const r = matcher.replace(v.textContent);
+      if (!r.edits.length) continue;
+      const ns = c.namespaceURI;
+      c.removeChild(v);
+      c.setAttribute('t', 'inlineStr');
+      const is = x.createElementNS(ns, 'is');
+      const te = x.createElementNS(ns, 't');
+      te.textContent = r.text;
+      is.appendChild(te);
+      c.appendChild(is);
+      n += r.edits.length;
+    }
+    return n;
+  }
+
+  /** Returns { blob, count } — count is how many replacements were made. */
+  async function rewrite(doc, matcher, opts) {
+    opts = opts || {};
+    if (doc.type.kind !== 'office') {
+      const r = matcher.replace(doc.text);
+      return { blob: new Blob([r.text], { type: doc.type.mime + ';charset=utf-8' }), count: r.edits.length, text: r.text };
+    }
+    // Work on a fresh copy so the same file can be processed again.
+    const zip = await ZipArchive.read(await (await doc.zip.toBlob()).arrayBuffer());
+    let count = 0;
+    for (const name of zip.names()) {
+      if (!isXmlPart(name)) continue;
+      const entry = zip.get(name);
+      const original = await entry.text();
+      let changed = 0;
+
+      if (/\.rels$/i.test(name)) {
+        const x = parseXml(original);
+        if (!x) continue;
+        for (const el of [...x.getElementsByTagName('*')]) {
+          const tg = el.getAttribute('Target');
+          if (tg && /^mailto:/i.test(tg)) {
+            const dec = decodeURIComponent(tg);
+            const r = matcher.replace(dec);
+            if (r.edits.length) { el.setAttribute('Target', r.text); changed += r.edits.length; }
+          }
+        }
+        if (changed) { entry.setText(serialize(x, original)); count += changed; }
+        continue;
+      }
+
+      const x = parseXml(original);
+      if (!x) continue;
+      for (const g of textGroups(x)) changed += applyToGroup(g.nodes, matcher);
+      const { els, attrs } = plainTargets(x, name);
+      for (const el of els) {
+        const r = matcher.replace(el.textContent);
+        if (r.edits.length) { el.textContent = r.text; changed += r.edits.length; }
+      }
+      for (const at of attrs) {
+        const r = matcher.replace(at.value);
+        if (!r.edits.length) continue;
+        at.value = at.localName === 'name' ? r.text.replace(/[:\\/?*[\]]/g, ' ').slice(0, 31) : r.text;
+        changed += r.edits.length;
+      }
+      if (/^xl\/worksheets\/[^/]+\.xml$/.test(name)) changed += convertNumericCells(x, matcher);
+      if (opts.scrubAuthor && name === 'docProps/core.xml') {
+        for (const el of [...x.getElementsByTagName('*')]) if (['creator', 'lastModifiedBy'].includes(el.localName) && el.textContent) { el.textContent = ''; changed++; }
+      }
+      if (changed) { entry.setText(serialize(x, original)); count += changed; }
+    }
+    return { blob: await zip.toBlob(doc.type.mime), count };
+  }
+
+  function outputName(name, suffix) {
+    const ext = extOf(name);
+    const base = ext ? name.slice(0, -(ext.length + 1)) : name;
+    return base + '-' + suffix + (ext ? '.' + ext : '');
+  }
+
+  global.FOffice = { openFile, rewrite, outputName, extOf, TYPES, OLD_FORMATS };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+  <script>
+/*
+ * The screens: add files → check names → download. Plus "Put names back".
+ */
+(function () {
+  'use strict';
+
+  const E = window.FEngine, O = window.FOffice, { ZipArchive } = window.FZip;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const state = {
+    files: [], // { id, file, doc, status: 'loading'|'ready'|'error', error }
+    keyRows: null,
+    keyName: '',
+    book: null,
+    people: [],
+    contacts: [],
+    off: new Set(), // ids the teacher unchecked
+    results: [],
+    outKeyRows: null,
+    keyDownloaded: false,
+    restoreRows: null,
+  };
+  let fileSeq = 0;
+
+  // ---------- small UI helpers ----------
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function busy(msg) {
+    $('busy-text').textContent = msg || 'Working…';
+    $('busy').hidden = !msg;
+  }
+
+  const nextFrame = () => new Promise((r) => setTimeout(r, 30));
+
+  function download(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  function fileIcon(name, bad) {
+    const ext = O.extOf(name);
+    const t = O.TYPES[ext];
+    const cls = bad ? 'bad' : !t ? 'text' : t.label === 'Word' ? 'word' : t.label === 'Excel' ? 'excel' : t.label === 'PowerPoint' ? 'ppt' : 'text';
+    const letter = bad ? '!' : { word: 'W', excel: 'X', ppt: 'P', text: 'T' }[cls];
+    return `<span class="ficon ${cls}" aria-hidden="true">${letter}</span>`;
+  }
+
+  function prettySize(n) {
+    return n < 1024 ? n + ' B' : n < 1048576 ? Math.round(n / 1024) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+  }
+
+  function wireDropzone(zone, input, onFiles) {
+    zone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+    });
+    ['dragenter', 'dragover'].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add('is-over'); }));
+    ['dragleave', 'drop'].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove('is-over'); }));
+    zone.addEventListener('drop', (e) => onFiles([...e.dataTransfer.files]));
+    input.addEventListener('change', () => { onFiles([...input.files]); input.value = ''; });
+  }
+  // Don't let a missed drop open the file in the browser tab.
+  ['dragover', 'drop'].forEach((ev) => window.addEventListener(ev, (e) => e.preventDefault()));
+
+  // ---------- tabs ----------
+
+  function showMode(mode) {
+    const hide = mode === 'hide';
+    $('tab-hide').setAttribute('aria-selected', hide);
+    $('tab-restore').setAttribute('aria-selected', !hide);
+    $('tab-hide').tabIndex = hide ? 0 : -1;
+    $('tab-restore').tabIndex = hide ? -1 : 0;
+    $('panel-hide').hidden = !hide;
+    $('panel-restore').hidden = hide;
+    if (!hide) syncRestoreKey();
+  }
+  $('tab-hide').onclick = () => showMode('hide');
+  $('tab-restore').onclick = () => showMode('restore');
+  document.querySelector('.mode-switch').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const toRestore = $('tab-hide').getAttribute('aria-selected') === 'true';
+    showMode(toRestore ? 'restore' : 'hide');
+    $(toRestore ? 'tab-restore' : 'tab-hide').focus();
+  });
+
+  function showStep(n) {
+    for (let i = 1; i <= 3; i++) $('step-' + i).hidden = i !== n;
+    document.querySelectorAll('.stepper li').forEach((li) => {
+      const s = +li.dataset.step;
+      li.classList.toggle('is-current', s === n);
+      li.classList.toggle('is-done', s < n);
+      if (s === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- step 1: files ----------
+
+  async function addFiles(files) {
+    for (const file of files) {
+      const item = { id: ++fileSeq, file, status: 'loading' };
+      state.files.push(item);
+      renderFiles();
+      try {
+        item.doc = await O.openFile(file);
+        item.status = 'ready';
+      } catch (err) {
+        item.status = 'error';
+        item.error = err.message || String(err);
+      }
+      renderFiles();
+    }
+  }
+
+  function renderFiles() {
+    $('file-list').innerHTML = state.files.map((f) => {
+      const bad = f.status === 'error';
+      const sub = f.status === 'loading' ? 'Reading…' : bad ? esc(f.error) : `${O.TYPES[f.doc.ext].label} · ${prettySize(f.file.size)} · ready`;
+      return `<li class="file ${bad ? 'is-error' : ''}">${fileIcon(f.file.name, bad)}
+        <div class="fmeta"><div class="fname">${esc(f.file.name)}</div><div class="fsub">${sub}</div></div>
+        <button class="icon-btn" data-remove="${f.id}" aria-label="Remove ${esc(f.file.name)}" title="Remove">✕</button></li>`;
+    }).join('');
+    const ready = state.files.filter((f) => f.status === 'ready').length;
+    const loading = state.files.some((f) => f.status === 'loading');
+    $('btn-find').disabled = !ready || loading;
+    $('step1-hint').textContent = loading ? 'Reading your files…' : ready ? `${ready} file${ready > 1 ? 's' : ''} ready.` : 'Add at least one file to continue.';
+    $('sample-hint').hidden = state.files.length > 0;
+  }
+
+  $('file-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-remove]');
+    if (!b) return;
+    state.files = state.files.filter((f) => f.id !== +b.dataset.remove);
+    renderFiles();
+  });
+
+  wireDropzone($('dropzone'), $('file-input'), addFiles);
+
+  $('try-sample').onclick = () => {
+    const text = [
+      'Period 3 — Writing conference notes',
+      '',
+      "Emma Johnson: Strong thesis. Emma's evidence in paragraph 2 needs a citation.",
+      'Liam Okafor was absent Tuesday. Mrs. Okafor called (610-555-0142) and will help him catch up.',
+      'Sofia Martinez and Noah worked together. Sofia led the discussion; Noah took notes.',
+      'Follow up with Johnson, Emma about her late work. Parent email: emma.johnson.parent@example.org',
+      'Student ID for Xiomara Delgado is 20451877. Xiomara wants to retake the quiz in May.',
+    ].join('\n');
+    addFiles([new File([text], 'Sample conference notes.txt', { type: 'text/plain' })]);
+  };
+
+  async function loadKeyFile(file, statusEl) {
+    try {
+      const rows = E.parseKeyCSV(await file.text());
+      statusEl.textContent = `✓ Loaded “${file.name}” — ${rows.filter((r) => /^person/i.test(r.type)).length} people.`;
+      return rows;
+    } catch (err) {
+      statusEl.textContent = '⚠ ' + (err.message || 'Could not read that key.');
+      return null;
+    }
+  }
+
+  $('key-input').addEventListener('change', async () => {
+    const f = $('key-input').files[0];
+    $('key-input').value = '';
+    if (!f) return;
+    const rows = await loadKeyFile(f, $('key-status'));
+    if (rows) { state.keyRows = rows; state.keyName = f.name; }
+  });
+
+  const opts = () => ({ emails: $('opt-emails').checked, phones: $('opt-phones').checked, ids: $('opt-ids').checked });
+
+  $('btn-find').onclick = async () => {
+    busy('Looking for names…');
+    await nextFrame();
+    try {
+      const docs = state.files.filter((f) => f.status === 'ready').map((f) => f.doc);
+      const corpus = { paragraphs: docs.flatMap((d) => d.corpus.paragraphs), tables: docs.flatMap((d) => d.corpus.tables) };
+      state.corpus = corpus;
+      const book = state.keyRows ? E.AliasBook.fromKeyRows(state.keyRows) : new E.AliasBook();
+      for (const p of corpus.paragraphs) for (const w of p.toLowerCase().match(/\p{L}+/gu) || []) book.avoid.add(w);
+      state.book = book;
+      const found = E.detect(corpus, $('roster').value, state.keyRows ? book : null, opts());
+      state.people = found.people;
+      state.contacts = found.contacts;
+      state.off = new Set(found.people.filter((p) => p.confidence === 'maybe').map((p) => p.id));
+      for (const p of state.people) book.aliasFor(p);
+      renderReview();
+      showStep(2);
+    } catch (err) {
+      console.error(err);
+      toast('Something went wrong: ' + err.message);
+    } finally {
+      busy(null);
+    }
+  };
+
+  // ---------- step 2: review ----------
+
+  const SOURCE_TAGS = {
+    roster: ['tag-roster', 'Class list'],
+    key: ['tag-key', 'From key'],
+    column: ['tag-column', 'Name column'],
+    text: ['tag-text', 'Found in text'],
+    manual: ['tag-manual', 'Added by you'],
+  };
+
+  function ctxHtml(c) {
+    return c ? `<div class="ctx">${esc(c.before)}<mark>${esc(c.hit)}</mark>${esc(c.after)}</div>` : '';
+  }
+
+  function personRow(p) {
+    const on = !state.off.has(p.id);
+    const src = ['roster', 'key', 'manual', 'column', 'text'].filter((s) => p.sources.has(s));
+    const tags = src.slice(0, 2).map((s) => `<span class="tag ${SOURCE_TAGS[s][0]}">${SOURCE_TAGS[s][1]}</span>`).join('');
+    const check = p.confidence === 'check' ? '<span class="tag tag-check" title="This is also an everyday word. Make sure it\'s a person.">Double-check</span>' : '';
+    const mentions = p.count ? `${p.count} mention${p.count > 1 ? 's' : ''}` : 'not seen in files';
+    const name = E.displayName(p);
+    return `<div class="row ${on ? '' : 'is-off'}" data-id="${p.id}" data-filter="${esc(name.toLowerCase())}">
+      <input type="checkbox" ${on ? 'checked' : ''} aria-label="Hide ${esc(name)}" data-toggle="${p.id}">
+      <div class="who"><div class="real-line"><span class="real">${esc(name)}</span>${tags}${check}<span class="mentions">${mentions}</span></div>${ctxHtml(p.contexts[0])}</div>
+      <div class="alias-wrap"><span class="arrow" aria-hidden="true">→</span><span class="alias"><span class="alias-text">${esc(state.book.aliasFor(p))}</span></span>
+        <button class="icon-btn" data-reroll="${p.id}" title="Pick a different code name" aria-label="New code name for ${esc(name)}">🎲</button></div>
+    </div>`;
+  }
+
+  function contactRow(c) {
+    const on = !state.off.has(c.id);
+    const preview = c.kind === 'Email' ? 'fake email' : c.kind === 'Phone' ? '555-555-01xx' : 'ID-0xx';
+    return `<div class="row ${on ? '' : 'is-off'}" data-id="${c.id}" data-filter="${esc(c.value.toLowerCase())}">
+      <input type="checkbox" ${on ? 'checked' : ''} aria-label="Hide ${esc(c.value)}" data-toggle="${c.id}">
+      <div class="who"><div class="real-line"><span class="real">${esc(c.value)}</span><span class="tag tag-text">${c.kind}</span><span class="mentions">${c.count} mention${c.count > 1 ? 's' : ''}</span></div>${ctxHtml(c.contexts[0])}</div>
+      <div class="alias-wrap"><span class="arrow" aria-hidden="true">→</span><span class="alias"><span class="alias-text">${preview}</span></span></div>
+    </div>`;
+  }
+
+  function group(title, desc, rows, cls) {
+    if (!rows.length) return '';
+    return `<div class="group ${cls || ''}"><div class="group-head"><h3>${title} <span class="g-count">${rows.length}</span></h3>
+      <button class="link-btn" data-all="${cls || 'people'}">Select all</button></div>
+      ${desc ? `<p class="group-desc">${desc}</p>` : ''}<div class="rows">${rows.join('')}</div></div>`;
+  }
+
+  function renderReview() {
+    const sure = state.people.filter((p) => p.confidence !== 'maybe');
+    const maybe = state.people.filter((p) => p.confidence === 'maybe');
+    const nFiles = state.files.filter((f) => f.status === 'ready').length;
+    const on = state.people.filter((p) => !state.off.has(p.id)).length;
+    $('review-summary').innerHTML = state.people.length || state.contacts.length
+      ? `We found <strong>${state.people.length} name${state.people.length === 1 ? '' : 's'}</strong>${state.contacts.length ? ` and <strong>${state.contacts.length} contact detail${state.contacts.length === 1 ? '' : 's'}</strong>` : ''} in ${nFiles} file${nFiles > 1 ? 's' : ''}. <strong>${on}</strong> will be hidden. Uncheck anything that isn't a person.`
+      : "We didn't find any names. If your files do have names, paste your class list on the first screen, or add names below.";
+    $('groups').innerHTML =
+      (sure.length ? group('People', '', sure.map(personRow), 'people') : '') +
+      group('Might be names — please check', 'These are also everyday words (like “Will” or “Grace”). Check the ones that are people.', maybe.map(personRow), 'maybe') +
+      group('Emails, phone numbers &amp; IDs', '', state.contacts.map(contactRow), 'contacts') +
+      (!state.people.length && !state.contacts.length ? '<div class="empty">No names found yet.</div>' : '');
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const q = $('filter').value.trim().toLowerCase();
+    document.querySelectorAll('#groups .row').forEach((r) => { r.hidden = q && !r.dataset.filter.includes(q); });
+  }
+  $('filter').addEventListener('input', applyFilter);
+
+  $('groups').addEventListener('change', (e) => {
+    const id = e.target.dataset.toggle;
+    if (!id) return;
+    if (e.target.checked) state.off.delete(id); else state.off.add(id);
+    e.target.closest('.row').classList.toggle('is-off', !e.target.checked);
+    const on = state.people.filter((p) => !state.off.has(p.id)).length;
+    const strongs = $('review-summary').querySelectorAll('strong');
+    if (strongs.length) strongs[strongs.length - 1].textContent = on;
+  });
+
+  $('groups').addEventListener('click', (e) => {
+    const r = e.target.closest('[data-reroll]');
+    if (r) {
+      const p = state.people.find((x) => x.id === r.dataset.reroll);
+      state.book.reroll(p);
+      for (const q of state.people) state.book.aliasFor(q);
+      renderReview();
+      toast('New code name: ' + state.book.aliasFor(p));
+      return;
+    }
+    const all = e.target.closest('[data-all]');
+    if (all) {
+      const g = all.dataset.all;
+      const list = g === 'contacts' ? state.contacts : state.people.filter((p) => (g === 'maybe') === (p.confidence === 'maybe'));
+      const allOn = list.every((x) => !state.off.has(x.id));
+      list.forEach((x) => (allOn ? state.off.add(x.id) : state.off.delete(x.id)));
+      renderReview();
+    }
+  });
+
+  function addManualName(raw) {
+    const parsed = E.parseName(raw);
+    if (!parsed) return false;
+    const exists = state.people.find((p) => E.norm(p.first || '') === E.norm(parsed.first) && E.norm(p.last || '') === E.norm(parsed.last || ''));
+    if (exists) { state.off.delete(exists.id); return exists; }
+    const p = { id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6), ...parsed, middles: parsed.middles || [], title: null, sources: new Set(['manual']), confidence: 'high', count: 0, contexts: [] };
+    const m = new E.Matcher(E.personForms(p).map((f) => ({ ...f, replace: '' })));
+    for (const para of state.corpus.paragraphs) for (const ed of m.findEdits(para)) {
+      p.count++;
+      if (p.contexts.length < 2) p.contexts.push(E.contextAround(para, ed.start, ed.end));
+    }
+    state.people.unshift(p);
+    state.book.aliasFor(p);
+    return p;
+  }
+
+  $('add-name').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = $('add-name-input').value.trim();
+    if (!v) return;
+    const p = addManualName(v);
+    if (!p) { toast("That doesn't look like a name."); return; }
+    $('add-name-input').value = '';
+    renderReview();
+    toast(p.count ? `Added ${E.displayName(p)} (${p.count} mention${p.count > 1 ? 's' : ''}).` : `Added ${E.displayName(p)}. Not seen in your files, but it'll be hidden if it appears.`);
+  });
+
+  $('btn-back-1').onclick = () => showStep(1);
+
+  // ---------- step 3: create files ----------
+
+  async function run() {
+    const people = state.people.filter((p) => !state.off.has(p.id));
+    const contacts = state.contacts.filter((c) => !state.off.has(c.id));
+    if (!people.length && !contacts.length) { toast('Nothing is checked. Check at least one name.'); return; }
+    busy('Swapping in code names…');
+    await nextFrame();
+    try {
+      const plan = E.buildSanitizePlan(people, contacts, state.book);
+      state.outKeyRows = plan.keyRows;
+      state.keyDownloaded = false;
+      state.results = [];
+      for (const f of state.files.filter((x) => x.status === 'ready')) {
+        const { blob, count } = await O.rewrite(f.doc, plan.matcher, { scrubAuthor: $('opt-author').checked });
+        state.results.push({ name: O.outputName(f.doc.name, 'sanitized'), blob, count, media: f.doc.media });
+      }
+      await leftoverCheck(people);
+      renderResults();
+      showStep(3);
+    } catch (err) {
+      console.error(err);
+      toast('Something went wrong: ' + err.message);
+    } finally {
+      busy(null);
+    }
+  }
+  $('btn-run').onclick = run;
+
+  /** Re-read the finished files and look for anything that still looks like a name. */
+  async function leftoverCheck(people) {
+    const aliasWords = new Set();
+    for (const r of state.outKeyRows) for (const w of r.code.toLowerCase().match(/\p{L}+/gu) || []) aliasWords.add(w);
+    const declined = new Set(state.people.filter((p) => state.off.has(p.id)).map((p) => E.norm(E.displayName(p))));
+    const found = [];
+    for (const r of state.results) {
+      try {
+        const doc = await O.openFile(new File([r.blob], r.name));
+        const d = E.detect(doc.corpus, '', null, { emails: false, phones: false, ids: false });
+        for (const p of d.people) {
+          if (p.confidence === 'maybe') continue;
+          const words = [p.first, p.last].filter(Boolean).flatMap((x) => x.toLowerCase().match(/\p{L}+/gu) || []);
+          if (words.some((w) => aliasWords.has(w))) continue;
+          const n = E.displayName(p);
+          if (declined.has(E.norm(n)) || found.includes(n)) continue;
+          found.push(n);
+        }
+      } catch (e) { /* the check is a bonus; never block the download */ }
+    }
+    state.leftovers = found;
+  }
+
+  function renderResults() {
+    const total = state.results.reduce((n, r) => n + r.count, 0);
+    const people = state.outKeyRows.filter((r) => r.type === 'Person').length;
+    $('done-summary').textContent = `We made ${total} replacement${total === 1 ? '' : 's'} for ${people} ${people === 1 ? 'person' : 'people'} across ${state.results.length} file${state.results.length > 1 ? 's' : ''}.`;
+    $('out-list').innerHTML = state.results.map((r, i) => `<li class="file">${fileIcon(r.name)}
+      <div class="fmeta"><div class="fname">${esc(r.name)}</div><div class="fsub">${r.count} replacement${r.count === 1 ? '' : 's'}</div>
+      ${r.media ? `<div class="pic-note">⚠ Has ${r.media} picture${r.media > 1 ? 's' : ''} — check them for names yourself.</div>` : ''}</div>
+      <button class="btn btn-primary" data-dl="${i}">Download</button></li>`).join('');
+    $('btn-zip').hidden = $('zip-note').hidden = state.results.length < 2;
+    $('pics-tip').hidden = !state.results.some((r) => r.media);
+    $('key-table').querySelector('tbody').innerHTML = state.outKeyRows.filter((r) => r.type !== 'First name' && r.type !== 'Last name')
+      .map((r) => `<tr><td>${esc(r.real)}</td><td>${esc(r.code)}</td></tr>`).join('');
+    const lo = state.leftovers || [];
+    $('leftover-card').hidden = !lo.length;
+    $('leftovers').innerHTML = lo.map((n) => `<span class="alias">${esc(n)}</span>`).join('');
+  }
+
+  $('out-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-dl]');
+    if (b) { const r = state.results[+b.dataset.dl]; download(r.blob, r.name); }
+  });
+
+  $('btn-zip').onclick = async () => {
+    const files = await Promise.all(state.results.map(async (r) => ({ name: r.name, data: new Uint8Array(await r.blob.arrayBuffer()) })));
+    download(await ZipArchive.fromFiles(files).toBlob('application/zip'), 'sanitized-files.zip');
+  };
+
+  function keyFileName() {
+    const d = new Date();
+    const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    return `FERPA-${stamp}-KEY.csv`;
+  }
+
+  $('btn-key').onclick = () => {
+    download(new Blob([E.keyToCSV(state.outKeyRows)], { type: 'text/csv;charset=utf-8' }), keyFileName());
+    state.keyDownloaded = true;
+    toast('Key saved. Keep it private — never upload it to AI.');
+  };
+
+  $('btn-print-key').onclick = () => {
+    const rows = state.outKeyRows.filter((r) => r.type !== 'First name' && r.type !== 'Last name');
+    const w = window.open('', '_blank');
+    if (!w) { toast('Please allow pop-ups to print the key.'); return; }
+    w.document.write(`<!doctype html><title>FERPA Key</title><style>body{font:14px system-ui,sans-serif;margin:32px}h1{font-size:20px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bbb;padding:6px 10px;text-align:left}p{color:#a33}</style>
+      <h1>FERPA Sanitizer key — ${esc(new Date().toLocaleDateString())}</h1><p>PRIVATE: contains real student names. Do not share or upload.</p>
+      <table><tr><th>Real</th><th>Code name</th></tr>${rows.map((r) => `<tr><td>${esc(r.real)}</td><td>${esc(r.code)}</td></tr>`).join('')}</table>`);
+    w.document.close();
+    w.focus();
+    w.print();
+    state.keyDownloaded = true;
+  };
+
+  $('btn-fix-leftovers').onclick = () => {
+    for (const n of state.leftovers || []) addManualName(n);
+    renderReview();
+    showStep(2);
+    toast('Added. Check the list, then hide names again.');
+  };
+
+  $('btn-back-2').onclick = () => showStep(2);
+  $('go-restore').onclick = () => showMode('restore');
+
+  $('btn-restart').onclick = () => {
+    if (!state.keyDownloaded && !confirm("You haven't saved the key. Without it you can't put names back. Start over anyway?")) return;
+    state.files = [];
+    state.people = [];
+    state.contacts = [];
+    state.results = [];
+    renderFiles();
+    showStep(1);
+  };
+
+  window.addEventListener('beforeunload', (e) => {
+    if (state.results.length && !state.keyDownloaded) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  // ---------- put names back ----------
+
+  let restoreMode = 'text';
+
+  function syncRestoreKey() {
+    const fromSession = !!state.outKeyRows && (!state.restoreRows || state.restoreRows === state.outKeyRows);
+    if (fromSession) state.restoreRows = state.outKeyRows;
+    $('r-key-session').hidden = !fromSession;
+    if (fromSession) $('r-key-session-text').textContent = `Using the key you just made (${state.outKeyRows.filter((r) => r.type === 'Person').length} people). Or drop a different key below.`;
+    updateRestore();
+  }
+
+  wireDropzone($('r-key-drop'), $('r-key-input'), async (files) => {
+    if (!files[0]) return;
+    const rows = await loadKeyFile(files[0], $('r-key-status'));
+    if (rows) { state.restoreRows = rows; $('r-key-session').hidden = true; updateRestore(); }
+  });
+
+  function setRestoreMode(m) {
+    restoreMode = m;
+    $('r-seg-text').setAttribute('aria-selected', m === 'text');
+    $('r-seg-file').setAttribute('aria-selected', m === 'file');
+    $('r-text-wrap').hidden = m !== 'text';
+    $('r-file-wrap').hidden = m !== 'file';
+    updateRestore();
+  }
+  $('r-seg-text').onclick = () => setRestoreMode('text');
+  $('r-seg-file').onclick = () => setRestoreMode('file');
+
+  function updateRestore() {
+    const text = $('r-input').value;
+    const card = $('r-output-card');
+    if (restoreMode !== 'text' || !text.trim()) { card.hidden = true; return; }
+    card.hidden = false;
+    if (!state.restoreRows) {
+      $('r-output').innerHTML = '<span class="hint">Add your key (step 1) to see real names here.</span>';
+      $('r-count').textContent = '';
+      return;
+    }
+    const m = E.buildRestoreMatcher(state.restoreRows);
+    const edits = m.findEdits(text);
+    let html = '', last = 0;
+    for (const ed of edits) {
+      html += esc(text.slice(last, ed.start)) + `<mark title="was “${esc(text.slice(ed.start, ed.end))}”">${esc(ed.text)}</mark>`;
+      last = ed.end;
+    }
+    $('r-output').innerHTML = html + esc(text.slice(last));
+    $('r-count').textContent = `${edits.length} name${edits.length === 1 ? '' : 's'} put back`;
+    state.restoredText = m.replace(text).text;
+  }
+  $('r-input').addEventListener('input', updateRestore);
+
+  $('r-copy').onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(state.restoredText || '');
+      toast('Copied! Paste it anywhere.');
+    } catch (e) {
+      const r = document.createRange();
+      r.selectNodeContents($('r-output'));
+      getSelection().removeAllRanges();
+      getSelection().addRange(r);
+      toast('Press Ctrl+C (or ⌘C) to copy.');
+    }
+  };
+  $('r-download').onclick = () => download(new Blob([state.restoredText || ''], { type: 'text/plain;charset=utf-8' }), 'AI-response-restored.txt');
+
+  wireDropzone($('r-file-drop'), $('r-file-input'), async (files) => {
+    if (!state.restoreRows) { toast('Add your key first (step 1).'); return; }
+    const m = E.buildRestoreMatcher(state.restoreRows);
+    for (const file of files) {
+      const li = document.createElement('li');
+      li.className = 'file';
+      li.innerHTML = `${fileIcon(file.name)}<div class="fmeta"><div class="fname">${esc(file.name)}</div><div class="fsub">Working…</div></div>`;
+      $('r-file-list').appendChild(li);
+      try {
+        const doc = await O.openFile(file);
+        const { blob, count } = await O.rewrite(doc, m, {});
+        const name = O.outputName(file.name.replace(/-sanitized(?=\.[^.]+$)/, ''), 'restored');
+        li.querySelector('.fname').textContent = name;
+        li.querySelector('.fsub').textContent = `${count} name${count === 1 ? '' : 's'} put back`;
+        const b = document.createElement('button');
+        b.className = 'btn btn-primary';
+        b.textContent = 'Download';
+        b.onclick = () => download(blob, name);
+        li.appendChild(b);
+      } catch (err) {
+        li.classList.add('is-error');
+        li.querySelector('.fsub').textContent = err.message;
+      }
+    }
+  });
+
+  renderFiles();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Swap student names for fun code names before using AI. Works offline — your files never leave your computer.">
+  <title>FERPA Sanitizer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 8 13v17c0 15 10 26 24 30 14-4 24-15 24-30V13Z' fill='%230f766e'/%3E%3Cpath d='M21 33l8 8 15-17' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4 8 13v17c0 15 10 26 24 30 14-4 24-15 24-30V13Z" fill="var(--brand)"/>
+          <path d="M21 33l8 8 15-17" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <h1>FERPA Sanitizer</h1>
+          <p class="tagline">Swap student names for code names before you use AI.</p>
+        </div>
+      </div>
+      <div class="privacy-pill" title="This page has no server. Your files are read and changed right here in your browser.">
+        <span class="dot" aria-hidden="true"></span>
+        <span><strong>Private:</strong> runs on this computer. Nothing is uploaded.</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <nav class="mode-switch" role="tablist" aria-label="What do you want to do?">
+      <button role="tab" id="tab-hide" aria-controls="panel-hide" aria-selected="true">
+        <span class="mode-ico" aria-hidden="true">🙈</span>
+        <span><strong>Hide student names</strong><small>Before you paste into AI</small></span>
+      </button>
+      <button role="tab" id="tab-restore" aria-controls="panel-restore" aria-selected="false" tabindex="-1">
+        <span class="mode-ico" aria-hidden="true">🔁</span>
+        <span><strong>Put names back</strong><small>After the AI answers</small></span>
+      </button>
+    </nav>
+
+    <!-- ============ HIDE NAMES ============ -->
+    <section id="panel-hide" role="tabpanel" aria-labelledby="tab-hide">
+      <ol class="stepper" aria-label="Progress">
+        <li data-step="1" class="is-current"><span class="num">1</span><span class="lbl">Add files</span></li>
+        <li data-step="2"><span class="num">2</span><span class="lbl">Check names</span></li>
+        <li data-step="3"><span class="num">3</span><span class="lbl">Download</span></li>
+      </ol>
+
+      <!-- Step 1 -->
+      <div class="step" id="step-1">
+        <div class="card">
+          <h2 class="card-title">Which files have student names in them?</h2>
+          <label class="dropzone" id="dropzone" tabindex="0">
+            <input type="file" id="file-input" multiple accept=".docx,.docm,.dotx,.xlsx,.xlsm,.pptx,.pptm,.txt,.md,.csv,.tsv,.doc,.xls,.ppt,.pdf,.odt,.ods,.odp,.rtf" hidden>
+            <svg class="dz-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 34h-2a9 9 0 0 1-1-18 12 12 0 0 1 23-3 10 10 0 0 1 3 20h-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 22v18m-7-11 7-7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="dz-main">Drag your files here</span>
+            <span class="dz-sub">or <span class="linkish">choose files</span> from your computer</span>
+            <span class="type-chips" aria-label="Supported file types">
+              <span class="chip chip-word">Word</span><span class="chip chip-excel">Excel</span><span class="chip chip-ppt">PowerPoint</span><span class="chip chip-text">Text &amp; CSV</span>
+            </span>
+          </label>
+          <ul class="file-list" id="file-list" aria-live="polite"></ul>
+          <p class="hint center" id="sample-hint">Just exploring? <button class="link-btn" id="try-sample" type="button">Try it with a sample file</button></p>
+        </div>
+
+        <details class="card fold" id="roster-fold">
+          <summary>
+            <span class="fold-ico" aria-hidden="true">📋</span>
+            <span class="fold-text"><strong>Paste your class list</strong> <span class="badge badge-rec">Recommended</span><small>Catches every name, even unusual ones.</small></span>
+          </summary>
+          <div class="fold-body">
+            <label for="roster" class="sr-only">Class list, one student per line</label>
+            <textarea id="roster" rows="6" spellcheck="false" placeholder="One student per line, any of these work:&#10;Emma Johnson&#10;Johnson, Liam&#10;Sofia (Sofi) Martinez"></textarea>
+            <p class="hint">Copy a column straight from your gradebook, Google Sheet, or student information system. This list is <strong>not saved</strong> anywhere.</p>
+          </div>
+        </details>
+
+        <details class="card fold" id="key-fold">
+          <summary>
+            <span class="fold-ico" aria-hidden="true">🔑</span>
+            <span class="fold-text"><strong>Reuse a key from before</strong><small>Students keep the same code names across assignments.</small></span>
+          </summary>
+          <div class="fold-body">
+            <div class="key-load">
+              <label class="btn btn-secondary">
+                <input type="file" id="key-input" accept=".csv,.txt" hidden>
+                Choose key file…
+              </label>
+              <span id="key-status" class="hint" aria-live="polite">No key loaded — that's fine for first-timers.</span>
+            </div>
+          </div>
+        </details>
+
+        <details class="card fold" id="opts-fold">
+          <summary>
+            <span class="fold-ico" aria-hidden="true">⚙️</span>
+            <span class="fold-text"><strong>Also hide…</strong><small>Emails, phone numbers, ID numbers and more.</small></span>
+          </summary>
+          <div class="fold-body opts">
+            <label class="check"><input type="checkbox" id="opt-emails" checked> <span>Email addresses</span></label>
+            <label class="check"><input type="checkbox" id="opt-phones" checked> <span>Phone numbers</span></label>
+            <label class="check"><input type="checkbox" id="opt-ids" checked> <span>Student ID numbers <small>(6–10 digits)</small></span></label>
+            <label class="check"><input type="checkbox" id="opt-author" checked> <span>Author name in the file's properties</span></label>
+          </div>
+        </details>
+
+        <div class="actions">
+          <span class="hint" id="step1-hint">Add at least one file to continue.</span>
+          <button class="btn btn-primary btn-lg" id="btn-find" disabled>Find names <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step" id="step-2" hidden>
+        <div class="card">
+          <div class="review-head">
+            <div>
+              <h2 class="card-title" id="review-title">Check the names we found</h2>
+              <p class="lead" id="review-summary"></p>
+            </div>
+            <div class="review-tools">
+              <label class="search">
+                <span class="sr-only">Filter names</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="search" id="filter" placeholder="Filter names">
+              </label>
+            </div>
+          </div>
+
+          <div class="legend" aria-hidden="true">
+            <span><span class="tag tag-roster">Class list</span></span>
+            <span><span class="tag tag-column">Name column</span></span>
+            <span><span class="tag tag-text">Found in text</span></span>
+            <span><span class="tag tag-check">Double-check</span></span>
+          </div>
+
+          <div id="groups"></div>
+
+          <form class="add-name" id="add-name">
+            <label for="add-name-input"><strong>Missed someone?</strong> Type their name and we'll hide it too.</label>
+            <div class="add-row">
+              <input id="add-name-input" type="text" placeholder="e.g. Xiomara Delgado" autocomplete="off">
+              <button class="btn btn-secondary" type="submit">Add name</button>
+            </div>
+          </form>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost" id="btn-back-1"><span aria-hidden="true">←</span> Back</button>
+          <button class="btn btn-primary btn-lg" id="btn-run">Hide these names <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step" id="step-3" hidden>
+        <div class="card success">
+          <div class="success-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div>
+            <h2 class="card-title" id="done-title">Your files are ready</h2>
+            <p class="lead" id="done-summary"></p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-sub"><span aria-hidden="true">📄</span> Safe to share with AI</h3>
+            <ul class="out-list" id="out-list"></ul>
+            <button class="btn btn-secondary full" id="btn-zip" hidden>Download all as .zip</button>
+            <p class="hint" id="zip-note" hidden>The key is <strong>not</strong> in the .zip, so you can't upload it by accident.</p>
+          </div>
+
+          <div class="card key-card">
+            <h3 class="card-sub"><span aria-hidden="true">🔑</span> Your key — keep it private</h3>
+            <p>The key is the only way to turn code names back into real names. <strong>Save it on your computer. Never upload it to an AI tool.</strong></p>
+            <div class="btn-row">
+              <button class="btn btn-key" id="btn-key">Download key</button>
+              <button class="btn btn-ghost" id="btn-print-key">Print key</button>
+            </div>
+            <details class="key-preview">
+              <summary>Show who is who</summary>
+              <div class="table-wrap"><table id="key-table"><thead><tr><th>Real</th><th>Code name</th></tr></thead><tbody></tbody></table></div>
+            </details>
+          </div>
+        </div>
+
+        <div class="card warn-card" id="leftover-card" hidden>
+          <h3 class="card-sub"><span aria-hidden="true">🔎</span> A second look found these. Are they names?</h3>
+          <p class="hint">We re-checked the finished files. If any of these are people, go back and add them.</p>
+          <div class="chips" id="leftovers"></div>
+          <button class="btn btn-secondary" id="btn-fix-leftovers">Go back and hide these</button>
+        </div>
+
+        <div class="card checklist">
+          <h3 class="card-sub">Before you upload, take 30 seconds:</h3>
+          <ul>
+            <li>Open the <em>-sanitized</em> file and skim it.</li>
+            <li id="pics-tip">Look at any pictures or screenshots. Text inside images can't be changed here.</li>
+            <li>Upload <strong>only</strong> the sanitized file — never the key.</li>
+            <li>When the AI answers, come back and choose <button class="link-btn" id="go-restore">Put names back</button>.</li>
+          </ul>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-ghost" id="btn-back-2"><span aria-hidden="true">←</span> Change names</button>
+          <button class="btn btn-secondary" id="btn-restart">Start over with new files</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PUT NAMES BACK ============ -->
+    <section id="panel-restore" role="tabpanel" aria-labelledby="tab-restore" hidden>
+      <div class="grid-2 restore-grid">
+        <div class="card">
+          <h2 class="card-title"><span class="num-badge">1</span> Your key</h2>
+          <div id="r-key-session" class="key-session" hidden>
+            <span class="ok-ico" aria-hidden="true">✓</span>
+            <span id="r-key-session-text">Using the key you just made.</span>
+          </div>
+          <label class="dropzone dz-small" id="r-key-drop" tabindex="0">
+            <input type="file" id="r-key-input" accept=".csv,.txt" hidden>
+            <span class="dz-main">Drop your key file here</span>
+            <span class="dz-sub">or <span class="linkish">choose it</span> (it ends in <code>-KEY.csv</code>)</span>
+          </label>
+          <p class="hint" id="r-key-status" aria-live="polite"></p>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title"><span class="num-badge">2</span> What the AI gave you</h2>
+          <div class="seg" role="tablist" aria-label="Input type">
+            <button role="tab" aria-selected="true" id="r-seg-text">Paste text</button>
+            <button role="tab" aria-selected="false" id="r-seg-file">Use a file</button>
+          </div>
+          <div id="r-text-wrap">
+            <label for="r-input" class="sr-only">AI response</label>
+            <textarea id="r-input" rows="8" placeholder="Paste the AI's answer here. Example: &quot;Fluffy Unicorn 45 did a great job organizing ideas…&quot;"></textarea>
+          </div>
+          <div id="r-file-wrap" hidden>
+            <label class="dropzone dz-small" id="r-file-drop" tabindex="0">
+              <input type="file" id="r-file-input" multiple accept=".docx,.docm,.dotx,.xlsx,.xlsm,.pptx,.pptm,.txt,.md,.csv,.tsv" hidden>
+              <span class="dz-main">Drop the AI's file here</span>
+              <span class="dz-sub">Word, Excel, PowerPoint, text or CSV</span>
+            </label>
+            <ul class="out-list" id="r-file-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="r-output-card" hidden>
+        <div class="review-head">
+          <h2 class="card-title">With real names <span class="count-pill" id="r-count"></span></h2>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="r-copy">Copy text</button>
+            <button class="btn btn-ghost" id="r-download">Download .txt</button>
+          </div>
+        </div>
+        <div class="restored" id="r-output" tabindex="0" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="explain wrap-narrow" aria-labelledby="how-title">
+      <h2 id="how-title">How it works</h2>
+      <div class="how-grid">
+        <div class="how"><span class="how-num">1</span><h3>Finds names</h3><p>Uses your class list, column headings like “Student Name”, and a built-in list of nearly 1,000 first names. You approve every one.</p></div>
+        <div class="how"><span class="how-num">2</span><h3>Swaps in code names</h3><p>Each student gets a random code name like <span class="code-eg">Fluffy Unicorn 45</span>. “Emma” becomes “Fluffy” and “Johnson” becomes “Unicorn 45”, so the writing still reads naturally.</p></div>
+        <div class="how"><span class="how-num">3</span><h3>Keeps a private key</h3><p>The key lists who is who. It stays with you, so you can put the real names back into whatever the AI writes.</p></div>
+      </div>
+      <details class="faq">
+        <summary>Why code names like “Fluffy Unicorn 45”?</summary>
+        <ul>
+          <li><strong>Random, not reversible.</strong> Code names are picked at random. They don't use initials, so they reveal nothing about the student.</li>
+          <li><strong>Consistent.</strong> The same student gets the same code name in every file you process together, or later if you reuse the key. Siblings share the animal part, just like a real family name.</li>
+          <li><strong>Easy to put back.</strong> Silly words like “Fluffy” almost never appear in schoolwork, so swapping real names back in is accurate.</li>
+          <li><strong>Number = unique.</strong> The number keeps two students apart even if their code names look alike.</li>
+        </ul>
+      </details>
+      <details class="faq">
+        <summary>Is this really offline?</summary>
+        <p>Yes. This page has no server and makes no network requests. You can turn off Wi-Fi and it still works. Download the single-file version, save it to your desktop, and double-click it any time.</p>
+      </details>
+      <details class="faq">
+        <summary>What it can't do</summary>
+        <ul>
+          <li>Read text inside pictures, screenshots, or scanned PDFs.</li>
+          <li>Open old <code>.doc</code>/<code>.xls</code>/<code>.ppt</code> files or PDFs. Save them as .docx/.xlsx/.pptx first.</li>
+          <li>Promise perfection. Always skim the result before you share it. This tool helps you follow FERPA, but it isn't legal advice.</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="foot wrap">FERPA Sanitizer · Free &amp; open source · Your files never leave this device.</footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="busy" id="busy" hidden><div class="busy-box"><span class="spinner" aria-hidden="true"></span><span id="busy-text">Working…</span></div></div>
+
+  <script src="js/zip.js"></script>
+  <script src="js/names-data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/office.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
