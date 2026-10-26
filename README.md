@@ -1,35 +1,53 @@
 # FERPA Sanitizer
 
-**Swap student names for fun code names before you paste schoolwork into AI. Then put the real names back afterward.**
+**Hide student names in your real Word, Excel, PowerPoint and PDF files before you use AI. Then put the real names back.**
+
+[![Download FERPA Sanitizer](https://img.shields.io/badge/Download-FERPA_Sanitizer-0f766e?style=for-the-badge)](https://mrperryai.github.io/FERPASan/)
+[![Download FERPA-san Edition](https://img.shields.io/badge/Download-FERPA--san_Edition-ff6fa8?style=for-the-badge)](https://mrperryai.github.io/FERPASan/)
+[![Try it in your browser](https://img.shields.io/badge/Try_it-in_your_browser-6d4ae0?style=for-the-badge)](https://mrperryai.github.io/FERPASan/FERPA-Sanitizer.html)
+
+[![Build and deploy](https://github.com/MrPerryAI/FERPASan/actions/workflows/pages.yml/badge.svg)](https://github.com/MrPerryAI/FERPASan/actions/workflows/pages.yml)
 
 `Emma Johnson turned in her essay.` → `Fluffy Unicorn 45 turned in her essay.`
 
-- 🔒 **Private.** It runs entirely in your web browser. Your files are never uploaded anywhere, and it works with Wi-Fi off.
-- 📄 **Works with your files.** Word, Excel, PowerPoint, PDF, and text/CSV. Formatting, tables, formulas and pictures stay as they were.
-- 🔑 **Reversible.** You get a private **key** so you can turn the code names in the AI's answer back into real names.
-- 🧑‍🏫 **Made for teachers.** Three steps, no install, no account.
+## Works on your real files, not just pasted text
 
-## Two editions
+Most anonymizers make you copy and paste text. FERPA Sanitizer opens the actual file, swaps the names, and hands you back the **same kind of file** with everything else untouched.
+
+| File | What gets cleaned | What stays exactly the same |
+|---|---|---|
+| **Word** (.docx) | Body text, tables, headers and footers, footnotes, comments, tracked changes, text boxes, picture alt text, file properties | Fonts, formatting, layout, images |
+| **Excel** (.xlsx) | Cells, "Student Name" / "First Name" / "Last Name" columns, sheet names, comments, chart labels, student ID numbers | Formulas (updated to match), formatting, other sheets |
+| **PowerPoint** (.pptx) | Slides, speaker notes, tables, comments | Design, animations, images |
+| **PDF** | All the text | Saved as a clean .txt file, which is what AI tools read best |
+| **Text / CSV** | Everything | Structure and columns |
+
+Plus:
+- 🔒 **Private.** It runs entirely in your web browser. Nothing is uploaded, and it works with Wi-Fi off.
+- 🔑 **Reversible.** A private **key** turns the code names in the AI's answer back into real names, in pasted text or in a whole file.
+- 📅 **Consistent.** Reuse your key and each student keeps the same code name week after week.
+- 🧑‍🏫 **Made for teachers.** Three steps, no install, no account. Free and open source.
+
+## Get it
+
+**Easiest:** go to **[mrperryai.github.io/FERPASan](https://mrperryai.github.io/FERPASan/)** and click **Download**. Save the file to your Desktop and double-click it whenever you need it. It works with no internet connection.
+
+You can also click **Open in browser** on that page and use it right there. That's private too: your files are processed on your computer, not on a server.
+
+### Two editions
 
 Both editions do exactly the same thing. Pick the one you like.
 
 | Standard Edition | FERPA-san Edition |
 |---|---|
-| [![Standard Edition](docs/standard-edition.png)](FERPA-Sanitizer.html) | [![FERPA-san Edition](docs/ferpa-san-edition.png)](FERPA-Sanitizer-FERPA-san-Edition.html) |
+| [![Standard Edition](docs/standard-edition.png)](https://mrperryai.github.io/FERPASan/) | [![FERPA-san Edition](docs/ferpa-san-edition.png)](https://mrperryai.github.io/FERPASan/) |
 | Clean and calm. Light and dark mode. | A PC-98 style visual novel. FERPA-san, the school's privacy librarian, walks you through each step. |
-| **[`FERPA-Sanitizer.html`](FERPA-Sanitizer.html)** | **[`FERPA-Sanitizer-FERPA-san-Edition.html`](FERPA-Sanitizer-FERPA-san-Edition.html)** |
 
 **Meet FERPA-san.** She has teal hair, a padlock hair clip, and a golden key on her ribbon. Her plush, Fluffy Unicorn #45, rides on her shoulder. Her picture is drawn fresh on your computer: the vector art is shrunk and reduced to a 16-color PC-98 palette with ordered dithering. Her expression changes as you work. She thinks while she scans, beams when she's done, turns serious about your key, and sweats if something goes wrong.
 
 ---
 
-## For teachers: how to use it
-
-### Get it (one time)
-
-1. Download one of the editions above. On GitHub, open the file and click the **Download raw file** button (⬇).
-2. Save it somewhere easy to find, like your Desktop.
-3. Double-click it. It opens in your web browser (Chrome, Edge, Firefox or Safari). That's it. You don't need internet.
+## How to use it
 
 ### Hide names (before AI)
 
@@ -119,6 +137,8 @@ vendor/pdfjs/          pdf.js 3.11 legacy build (Apache-2.0)
 vendor/fonts/          DotGothic16, Latin subset (SIL OFL), FERPA-san Edition only
 tools/build.mjs        Bundles everything into the two single-file editions
 tools/build-names.py   Downloads the public datasets and regenerates js/names-big.js
+site/index.html        The GitHub Pages landing page with the download buttons
+.github/workflows/     Builds both editions and deploys the site on every push to main
 ```
 
 **Rebuild the single files after editing:**
@@ -127,6 +147,8 @@ tools/build-names.py   Downloads the public datasets and regenerates js/names-bi
 node tools/build.mjs          # writes both editions
 python3 tools/build-names.py  # only if you want to refresh the name lists
 ```
+
+Commit the rebuilt `FERPA-Sanitizer*.html` files along with your changes. The **Build and deploy** workflow rebuilds them on every push and pull request, and fails if the committed copies are out of date. On `main` it then publishes the landing page and both editions to GitHub Pages.
 
 While you work, open `index.html` directly in a browser. Add `?edition=ferpasan` to the address to see the FERPA-san Edition. The scripts are classic (non-module) on purpose, so everything runs over `file://`.
 

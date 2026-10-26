@@ -1,0 +1,60 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build both single-file editions
+        run: node tools/build.mjs
+
+      - name: Check the committed single files are up to date
+        run: |
+          if ! git diff --quiet -- FERPA-Sanitizer.html FERPA-Sanitizer-FERPA-san-Edition.html; then
+            echo "::error::FERPA-Sanitizer*.html are out of date. Run 'node tools/build.mjs' and commit the result."
+            git diff --stat
+            exit 1
+          fi
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/docs
+          cp site/index.html _site/
+          cp FERPA-Sanitizer.html FERPA-Sanitizer-FERPA-san-Edition.html _site/
+          cp docs/*.png _site/docs/
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
