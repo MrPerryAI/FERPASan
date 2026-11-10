@@ -212,7 +212,7 @@
       showStep(2);
       const maybe = found.people.filter((p) => p.confidence === 'maybe').length;
       if (!found.people.length && !found.contacts.length) say('oops', "I couldn't find any names... If there are students in here, paste your class list on the first page, or type their names below for me!");
-      else say('happy', `I found ${plural(found.people.length, 'name')}! Please look them over for me.${maybe ? ` ${maybe} might just be ordinary words or famous people, so I left those unchecked.` : ''} Press the dice to give someone a new code name.`);
+      else say('happy', `I found ${plural(found.people.length, 'name')}! Please look them over for me.${maybe ? ` ${maybe} might be last names on their own, ordinary words or famous people, so I left those unchecked.` : ''} Press the dice to give someone a new code name.`);
     } catch (err) {
       console.error(err);
       toast('Something went wrong: ' + err.message);
@@ -240,7 +240,10 @@
     const on = !state.off.has(p.id);
     const src = ['roster', 'key', 'manual', 'column', 'text'].filter((s) => p.sources.has(s));
     const tags = src.slice(0, 2).map((s) => `<span class="tag ${SOURCE_TAGS[s][0]}">${SOURCE_TAGS[s][1]}</span>`).join('');
-    const check = p.confidence === 'check' ? '<span class="tag tag-check" title="This is also an everyday word. Make sure it\'s a person.">Double-check</span>' : '';
+    const check = p.confidence === 'check' ? '<span class="tag tag-check" title="This is also an everyday word. Make sure it\'s a person.">Double-check</span>'
+      : p.confidence !== 'maybe' ? ''
+      : p.famous ? '<span class="tag tag-check" title="Looks like a famous person or book character, not a student.">Famous?</span>'
+      : p.loneLast ? '<span class="tag tag-check" title="A last name on its own. Check it if this is a student or parent.">Last name?</span>' : '';
     const mentions = p.count ? `${p.count} mention${p.count > 1 ? 's' : ''}` : 'not seen in files';
     const name = E.displayName(p);
     return `<div class="row ${on ? '' : 'is-off'}" data-id="${p.id}" data-filter="${esc(name.toLowerCase())}">
@@ -278,7 +281,7 @@
       : "We didn't find any names. If your files do have names, paste your class list on the first screen, or add names below.";
     $('groups').innerHTML =
       (sure.length ? group('People', '', sure.map(personRow), 'people') : '') +
-      group('Might be names — please check', 'These are also everyday words (like “Will” or “Grace”). Check the ones that are people.', maybe.map(personRow), 'maybe') +
+      group('Might be names — please check', 'Last names on their own (like “Ramirez”), everyday words (like “Will” or “Grace”), and famous people. Check the ones that are your students or parents.', maybe.map(personRow), 'maybe') +
       group('Emails, phone numbers &amp; IDs', '', state.contacts.map(contactRow), 'contacts') +
       (!state.people.length && !state.contacts.length ? '<div class="empty">No names found yet.</div>' : '');
     applyFilter();
@@ -323,8 +326,13 @@
   function addManualName(raw) {
     const parsed = E.parseName(raw);
     if (!parsed) return false;
-    const exists = state.people.find((p) => E.norm(p.first || '') === E.norm(parsed.first) && E.norm(p.last || '') === E.norm(parsed.last || ''));
-    if (exists) { state.off.delete(exists.id); return exists; }
+    const exists = state.people.find((p) => E.norm(p.first || '') === E.norm(parsed.first || '') && E.norm(p.last || '') === E.norm(parsed.last || '') && !p.title);
+    if (exists) {
+      state.off.delete(exists.id);
+      exists.confidence = 'high'; // the teacher vouched for it: move it out of "maybe"
+      exists.sources.add('manual');
+      return exists;
+    }
     const p = { id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6), ...parsed, middles: parsed.middles || [], title: null, sources: new Set(['manual']), confidence: 'high', count: 0, contexts: [] };
     const m = new E.Matcher(E.personForms(p).map((f) => ({ ...f, replace: '' })));
     for (const para of state.corpus.paragraphs) for (const ed of m.findEdits(para)) {
@@ -394,7 +402,7 @@
         const doc = await O.openFile(new File([r.blob], r.name));
         const d = E.detect(doc.corpus, '', null, { emails: false, phones: false, ids: false });
         for (const p of d.people) {
-          if (p.confidence === 'maybe') continue;
+          if (p.confidence === 'maybe' && !p.loneLast) continue; // a stray last name is worth a second look
           const words = [p.first, p.last].filter(Boolean).flatMap((x) => x.toLowerCase().match(/\p{L}+/gu) || []);
           if (words.some((w) => aliasWords.has(w))) continue;
           const n = E.displayName(p);

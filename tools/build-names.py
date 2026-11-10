@@ -82,25 +82,36 @@ def tar_json(name, member_suffix):
 
 def main():
     first = set()
+    peak = {}  # highest share of babies given this name in any year since 1970
     with open(fetch('ssa.csv'), newline='') as f:
         for r in csv.DictReader(f):
+            name = r['name'].lower()
             if int(r['year']) >= 1940:
-                first.add(r['name'].lower())
+                first.add(name)
+            if int(r['year']) >= 1970:
+                peak[name] = max(peak.get(name, 0), float(r['percent']))
     first |= set(MODERN)
     stdlib = {n.lower() for n in tar_json('female.tgz', 'data/names.json') + tar_json('male.tgz', 'data/names.json')}
 
     with zipfile.ZipFile(fetch('census.zip')) as z:
         member = next(n for n in z.namelist() if n.endswith('.csv'))
         rows = csv.DictReader(io.TextIOWrapper(z.open(member), 'utf-8'))
-        surnames = {r['name'].lower() for r in rows if r['count'].isdigit() and int(r['count']) >= 1000 and r['name'].isalpha()}
+        count = {r['name'].lower(): int(r['count']) for r in rows if r['count'].isdigit() and r['name'].isalpha()}
+    surnames = {n for n, c in count.items() if c >= 1000}
 
     words = set()
     for tier in ('10', '20', '35'):
         words |= {w for w in tar_json('words.tgz', 'english-words-%s.json' % tier) if w.isalpha() and w.islower()}
 
     # The stdlib lists include some plain words ("any", "bald"); only trust them for non-words.
-    first |= {n for n in stdlib if n not in words}
+    # They also include plenty of surnames ("Smith", "Moore"): leave those to the surname list.
+    first |= {n for n in stdlib if n not in words and n not in surnames}
     first = {n for n in first if n.isalpha() and len(n) >= 2}
+
+    # "Johnson", "Williams", "Davis": technically given names once, but today a lone "Johnson" is a
+    # last name. Common surname + rarely used as a first name since 1970 => treat as a surname only.
+    lastish = {n for n in first if count.get(n, 0) >= 5000 and peak.get(n, 0) < 0.0004 and n not in MODERN}
+    first -= lastish
     first.difference_update({'unknown', 'unnamed', 'infant', 'baby', 'male', 'female', 'boy', 'girl', 'twin'})
 
     careful = sorted((first & words) | (first & set(GEO)))
@@ -109,6 +120,11 @@ def main():
     for tier in ('10', '20'):
         frequent |= {w for w in tar_json('words.tgz', 'english-words-%s.json' % tier) if w.isalpha() and w.islower()}
     common = sorted(w for w in frequent if w not in first and w not in surnames and len(w) > 2)
+    # Surnames that are also dictionary words ("Park", "Long", "Young"): fine after a first name,
+    # but never guessed to be a name when they stand alone.
+    wordsur = sorted(surnames & words)
+    # ...except the very common ones ("Smith", "Brown", "King"), which get a little more trust.
+    bigsur = sorted(n for n in wordsur if count[n] >= 50000)
     first.difference_update({'the', 'and', 'for', 'you', 'her', 'his', 'she', 'him', 'unknown', 'unnamed', 'infant', 'baby', 'male', 'female', 'boy', 'girl', 'twin'})
 
     js = [
@@ -119,6 +135,9 @@ def main():
         '  g.FNamesBig = {',
         '    first: %s,' % json.dumps(' '.join(sorted(first))),
         '    surnames: %s,' % json.dumps(' '.join(sorted(surnames))),
+        '    lastish: %s,' % json.dumps(' '.join(sorted(lastish))),
+        '    wordsur: %s,' % json.dumps(' '.join(wordsur)),
+        '    bigsur: %s,' % json.dumps(' '.join(bigsur)),
         '    careful: %s,' % json.dumps(' '.join(careful)),
         '    common: %s,' % json.dumps(' '.join(common)),
         '    famous: %s,' % json.dumps('|'.join(n.strip() for n in FAMOUS if n.strip())),
@@ -128,6 +147,8 @@ def main():
     ]
     with open(OUT, 'w') as f:
         f.write('\n'.join(js))
+    print('surname-only (removed from first names): %d, e.g. %s' % (len(lastish), ' '.join(sorted(lastish, key=lambda n: -count[n])[:40])))
+    print('surnames that are also words: %d' % len(wordsur))
     print('first names: %d, surnames: %d, careful: %d, common words: %d -> %s (%d KB)' % (
         len(first), len(surnames), len(careful), len(common), os.path.relpath(OUT, ROOT), os.path.getsize(OUT) // 1024))
 

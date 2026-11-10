@@ -49,7 +49,7 @@
     Mackenzie Macy Maddox Madeline Madelyn Madison Mae Maeve Magnus Maia Makayla Malachi Malakai Malcolm Malia Maliyah
     Manuel Marco Marcos Marcus Margaret Maria Mariah Mariam Mariana Marisol Marissa Marley Marshall Martin Martina
     Marvin Mary Mateo Mathias Matias Matthew Mauricio Maverick Maya Mckenzie Megan Mehmet Mei Melanie Melissa Melody
-    Mercy Meredith Mia Micah Michael Michaela Michelle Miguel Mila Milan Miles Miley Miller Milo Mina Miranda Miriam
+    Mercy Meredith Mia Micah Michael Michaela Michelle Miguel Mila Milan Miles Miley Milo Mina Miranda Miriam
     Mohamed Mohammad Mohammed Moises Molly Monica Monique Morgan Moses Muhammad Mustafa Myles Nadia Naomi Natalia
     Natalie Nathan Nathaniel Nayeli Neha Nehemiah Nevaeh Nia Nicholas Nicole Nikolai Nina Noah Noelle Nolan Nora Norah
     Nyla Octavia Oliver Olivia Omar Orion Oscar Owen Pablo Paige Paisley Paola Paris Parker Patricia Patrick Paul Paula
@@ -87,7 +87,7 @@
     during since until than then this that these those there here when where why how what which who whom whose is are
     was were be been being am do does did done has have had having can could should would will shall may might must
     not no yes i me my mine we us our ours you your yours he him his she her hers it its they them their theirs
-    mr mrs ms miss mx dr prof sir madam
+    mr mrs ms miss mx dr prof sir madam jr sr ii iii iv
     monday tuesday wednesday thursday friday saturday sunday january february march april may june july august
     september october november december jan feb mar apr jun jul aug sep sept oct nov dec spring summer fall autumn winter
     math maths mathematics english ela science history reading writing spelling grammar art music pe gym health
@@ -112,8 +112,24 @@
     chromebook ipad iphone android youtube tiktok instagram snapchat
   `));
 
+  // Places and institutions that are also surnames: never guessed to be a person when alone.
+  const PLACES = new Set(split(`
+    america africa asia europe australia antarctica canada mexico england britain ireland scotland wales france spain
+    germany italy poland russia china japan korea india egypt israel greece rome paris london berlin dublin holland
+    alabama alaska arizona arkansas california colorado connecticut delaware florida georgia hawaii idaho illinois
+    indiana iowa kansas kentucky louisiana maine maryland massachusetts michigan minnesota mississippi missouri montana
+    nebraska nevada hampshire jersey york carolina dakota ohio oklahoma oregon pennsylvania rhode tennessee texas utah
+    vermont virginia washington wisconsin wyoming boston chicago houston dallas denver phoenix atlanta miami seattle
+    detroit philadelphia pittsburgh baltimore cleveland columbus austin orlando memphis nashville portland sacramento
+    harvard yale princeton stanford oxford cambridge duke cornell disney nike ford tesla walmart target costco netflix
+    congress senate constitution democrat republican christian muslim jewish catholic buddhist hindu bible quran
+  `));
+
   // Honorifics that usually precede an adult's last name.
-  const HONORIFICS = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Dr', 'Coach', 'Prof'];
+  const HONORIFICS = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Dr', 'Coach', 'Prof', 'Professor', 'Principal', 'Doctor', 'Nurse', 'Officer',
+    'Pastor', 'Reverend', 'Rev', 'President', 'General', 'Senator', 'Governor', 'Captain', 'Colonel', 'Sergeant', 'Sgt', 'Queen', 'Sir', 'Lord', 'Lady', 'Saint'];
+  // Titles from history books rather than the school directory: offered unchecked.
+  const HISTORIC_TITLES = new Set(['president', 'general', 'senator', 'governor', 'captain', 'colonel', 'sergeant', 'sgt', 'queen', 'sir', 'lord', 'lady', 'saint']);
 
   // Whimsical words picked because they almost never appear in real schoolwork.
   // That makes "putting names back" accurate later. None of them are real first names.
@@ -152,6 +168,11 @@
   global.FNames = {
     FIRST_NAMES: new Set([...FIRST_NAMES.map((n) => n.toLowerCase()), ...words(big.first)]),
     SURNAMES: new Set(words(big.surnames)),
+    WORD_SURNAMES: new Set(words(big.wordsur)),
+    BIG_SURNAMES: new Set(words(big.bigsur)),
+    TITLE_ABBR: new Set(['mr', 'mrs', 'ms', 'mx', 'dr', 'prof', 'rev', 'sgt']),
+    HISTORIC_TITLES,
+    PLACES,
     COMMON_WORDS: new Set(words(big.common)),
     FAMOUS: new Set(big.famous ? big.famous.split('|') : []),
     COMMON_WORD_NAMES,

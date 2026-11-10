@@ -95,18 +95,36 @@ Each student gets a code name like **Fluffy Unicorn 45**:
 
 ## How names are found
 
-1. **Your class list** (most accurate) and any **key** you loaded.
-2. **Column headings** in spreadsheets and tables, such as "Student Name", "First Name", "Last Name" or "Parent/Guardian".
-3. **Ordinary sentences**, using built-in lists of **10,000+ first names** (US Social Security baby names plus other open datasets) and **25,000 last names** (US Census 2010). The tool also catches:
+1. **Your class list** (most accurate) and any **key** you loaded. Full names, first names, or last names on their own all work.
+2. **Column headings** in spreadsheets and tables, such as "Student Name", "First Name", "Last Name", `Last_Name`, `LName` or "Parent/Guardian". If a table has no headings, a column that is mostly surnames is treated as a last-name column.
+3. **Ordinary sentences**, using built-in lists of about **9,000 first names** (US Social Security baby names plus other open datasets) and **25,000 last names** (US Census 2010). The tool also catches:
    - the last name after a first name ("Emma Johnson", "Maria de la Cruz")
-   - titles ("Mrs. Okafor", "Dr. Patel")
-   - gradebook order ("Johnson, Emma")
+   - titles ("Mrs. Okafor", "Dr. Patel", "Coach Davis")
+   - gradebook order, anywhere in a line ("Johnson, Emma - 85%")
    - unfamiliar first names before a common last name ("Oluwaseun Adams")
 4. **Contact details:** email addresses, phone numbers, and student ID numbers (6–10 digits). Each can be turned off under **"Also hide…"**.
 
-It also knows what *isn't* a name: everyday words ("Noah's **Math** homework" isn't "Noah Math"), place names ("New York", "Los Angeles"), and famous people.
+### Last names
 
-After making the files, the tool **re-reads the finished files** and lists anything that still looks like a name, so you can go back and add it.
+Last names show up in more shapes than first names, so they get extra handling:
+
+| In your file | What happens |
+|---|---|
+| `Johnson` on its own, after "Emma Johnson" appeared anywhere | Gets Emma's last-name code (`Unicorn 45`), every time, including `JOHNSON` |
+| `Maria Garcia Lopez`, later `Garcia Lopez`, `Maria Garcia` or just `Lopez` | One person. Each half of a double surname maps to the same code |
+| `Emma Smith-Jones`, later `Emma Smith` | One person. The same goes for "Cruz" from "de la Cruz" |
+| `Emma Rose Johnson`, later `Emma Rose` | One person. The middle name is dropped |
+| `E. Johnson` | Becomes Emma's full code name, if only one person fits |
+| `Ramirez was late` (never seen with a first name) | Listed under **"Might be names"** with a **Last name?** tag, unchecked. Tick it if it's a student |
+
+Names that are far more often surnames than first names (Johnson, Williams, Davis, Smith) are always treated as last names when they stand alone.
+
+It also knows what *isn't* a student:
+- everyday words: "Noah's **Math** homework" isn't "Noah Math", and "Long ago" isn't guessed to be someone called Long
+- place and school names: "New York", "Johnson County", "Wilson Elementary"
+- famous people and history-book titles ("Martin Luther King", "President Lincoln"), which are listed unchecked
+
+After making the files, the tool **re-reads the finished files** and lists anything that still looks like a name, including stray last names, so you can go back and add it.
 
 ## What it can't do (yet)
 
@@ -137,6 +155,7 @@ vendor/pdfjs/          pdf.js 3.11 legacy build (Apache-2.0)
 vendor/fonts/          DotGothic16, Latin subset (SIL OFL), FERPA-san Edition only
 tools/build.mjs        Bundles everything into the two single-file editions
 tools/build-names.py   Downloads the public datasets and regenerates js/names-big.js
+tests/names.test.js    Regression tests for name detection (run with node, no dependencies)
 site/index.html        The GitHub Pages landing page with the download buttons
 .github/workflows/     Builds both editions and deploys the site on every push to main
 ```
@@ -146,9 +165,10 @@ site/index.html        The GitHub Pages landing page with the download buttons
 ```bash
 node tools/build.mjs          # writes both editions
 python3 tools/build-names.py  # only if you want to refresh the name lists
+node tests/names.test.js      # name-detection tests
 ```
 
-Commit the rebuilt `FERPA-Sanitizer*.html` files along with your changes. The **Build and deploy** workflow rebuilds them on every push and pull request, and fails if the committed copies are out of date. On `main` it then publishes the landing page and both editions to GitHub Pages.
+Commit the rebuilt `FERPA-Sanitizer*.html` files along with your changes. The **Build and deploy** workflow runs the tests and rebuilds them on every push and pull request, and fails if a test fails or the committed copies are out of date. On `main` it then publishes the landing page and both editions to GitHub Pages.
 
 While you work, open `index.html` directly in a browser. Add `?edition=ferpasan` to the address to see the FERPA-san Edition. The scripts are classic (non-module) on purpose, so everything runs over `file://`.
 

@@ -85,7 +85,7 @@
           <div class="fold-body">
             <label for="roster" class="sr-only">Class list, one student per line</label>
             <textarea id="roster" rows="6" spellcheck="false" placeholder="One student per line, any of these work:&#10;Emma Johnson&#10;Johnson, Liam&#10;Sofia (Sofi) Martinez"></textarea>
-            <p class="hint">Copy a column straight from your gradebook, Google Sheet, or student information system. This list is <strong>not saved</strong> anywhere.</p>
+            <p class="hint">Copy a column straight from your gradebook, Google Sheet, or student information system. Last names on their own work too. This list is <strong>not saved</strong> anywhere.</p>
           </div>
         </details>
 
@@ -151,7 +151,7 @@
           <div id="groups"></div>
 
           <form class="add-name" id="add-name">
-            <label for="add-name-input"><strong>Missed someone?</strong> Type their name and we'll hide it too.</label>
+            <label for="add-name-input"><strong>Missed someone?</strong> Type a full name, a first name, or just a last name, and we'll hide it too.</label>
             <div class="add-row">
               <input id="add-name-input" type="text" placeholder="e.g. Xiomara Delgado" autocomplete="off">
               <button class="btn btn-secondary" type="submit">Add name</button>
@@ -282,7 +282,7 @@
     <section class="explain wrap-narrow" aria-labelledby="how-title">
       <h2 id="how-title">How it works</h2>
       <div class="how-grid">
-        <div class="how"><span class="how-num">1</span><h3>Finds names</h3><p>Uses your class list, column headings like “Student Name”, and built-in lists of over 10,000 first names and 25,000 last names. You approve every one.</p></div>
+        <div class="how"><span class="how-num">1</span><h3>Finds names</h3><p>Uses your class list, column headings like “Student Name”, and built-in lists of about 9,000 first names and 25,000 last names. You approve every one.</p></div>
         <div class="how"><span class="how-num">2</span><h3>Swaps in code names</h3><p>Each student gets a random code name like <span class="code-eg">Fluffy Unicorn 45</span>. “Emma” becomes “Fluffy” and “Johnson” becomes “Unicorn 45”, so the writing still reads naturally.</p></div>
         <div class="how"><span class="how-num">3</span><h3>Keeps a private key</h3><p>The key lists who is who. It stays with you, so you can put the real names back into whatever the AI writes.</p></div>
       </div>

@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Test name detection
+        run: node tests/names.test.js
+
       - name: Build both single-file editions
         run: node tools/build.mjs
 
